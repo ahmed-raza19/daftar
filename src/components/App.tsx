@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ApiCallError, postJson } from "@/lib/api";
 import { CODE_SCENARIO } from "@/lib/code-scenario";
 import { SAMPLE_SCENARIO } from "@/lib/sample-scenario";
+import { attachmentsFor } from "@/lib/files";
 import { createSession, loadSession, saveSession } from "@/lib/session";
 import type { GraduateProfile, Report, ReviewQA, Scenario, Session } from "@/lib/types";
 import Loading from "./Loading";
@@ -75,7 +76,8 @@ export default function App() {
     setReviewing(null);
     setBusy({ kind: "assessing" });
     try {
-      const res = await postJson<{ report: Report }>("/api/assess", submitted);
+      // Attached images/PDFs live in memory (not in localStorage); send them along for grading.
+      const res = await postJson<{ report: Report }>("/api/assess", { ...submitted, attachments: attachmentsFor(submitted.files) });
       setSession({ ...submitted, report: res.report });
     } catch (e) {
       setError(e instanceof ApiCallError ? e.message : "Grading failed. Try again.");

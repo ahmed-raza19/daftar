@@ -36,6 +36,14 @@ export function reviewPrompt(session: Session): string {
           lastRun?.results.map((r) => `- ${r.passed ? "PASS" : "FAIL"}: ${r.name}${r.message ? ` (${r.message})` : ""}`).join("\n") ?? ""
         }`
       : "",
+    (session.files ?? []).length
+      ? `ATTACHED FILES: ${(session.files ?? []).map((f) => f.name).join(", ")}${(session.files ?? [])
+          .filter((f) => f.kind === "text" && f.text)
+          .map((f) => `
+--- ${f.name}
+${f.text!.slice(0, 4000)}`)
+          .join("")}`
+      : "",
     `THE NEW HIRE'S LAST MESSAGES:\n${mine.join("\n") || "(none)"}`,
     `<submission>\n${s.codeTask ? `CODE:\n${session.code ?? ""}\n\nNOTE:\n` : ""}${session.deliverable}\n</submission>`,
   ]
