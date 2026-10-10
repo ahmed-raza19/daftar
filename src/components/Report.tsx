@@ -53,24 +53,28 @@ export default function ReportView({ session, onRestart, onBack }: Props) {
         {/* Hero */}
         <section className="grid gap-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 md:grid-cols-[1fr_auto]">
           <div>
-            <div className="text-xs font-semibold text-brand-700">Job-readiness report</div>
-            <h1 className="mt-1 text-2xl font-semibold text-slate-900 sm:text-3xl">{session.profile.name}</h1>
-            <p className="mt-1 text-sm text-slate-500">
-              {s.graduateTitle} at {s.company.name} (fictional) · {session.profile.degree}
+            <h1 className="text-3xl font-bold text-ink sm:text-4xl">{session.profile.name}&apos;s first-shift review</h1>
+            <p className="mt-2 text-sm text-slate-500">
+              {s.graduateTitle} at {s.company.name} (a fictional company), {session.profile.degree}
             </p>
-            <p className="mt-4 max-w-2xl leading-relaxed text-slate-700">{r.summary}</p>
+            <p className="mt-5 max-w-2xl leading-relaxed text-slate-700">{r.summary}</p>
             <p className="mt-4 text-xs text-slate-500">
               Based on {plural(yourMessages.length, "message")} across {channelsUsed} of {channels(s).length} channels,{" "}
-              {foundCount} of {facts.length} hidden facts uncovered, and your deliverable.
+              {foundCount} of {facts.length} hidden facts uncovered
+              {s.codeTask && session.codeRuns?.length
+                ? `, ${session.codeRuns.at(-1)!.passed}/${session.codeRuns.at(-1)!.total} hidden tests passing`
+                : ""}
+              , and your deliverable.
             </p>
           </div>
           <div className="flex flex-col items-start justify-center md:items-end">
             <div className="text-sm font-medium text-slate-500">Overall</div>
             <div className="flex items-baseline gap-1">
-              <span className="text-6xl font-semibold tabular-nums tracking-tight text-slate-900">{r.overall}</span>
+              <span className="font-display text-7xl font-bold tabular-nums text-ink">{r.overall}</span>
               <span className="text-lg text-slate-400">/100</span>
             </div>
-            <span className="mt-1 rounded-full bg-brand-50 px-3 py-1 text-sm font-semibold text-brand-800 ring-1 ring-brand-200">
+            {/* the verdict as a reviewer's stamp */}
+            <span className="mt-2 inline-block -rotate-3 rounded-md border-2 border-brand-700 px-3 py-1 font-display text-lg font-bold text-brand-700">
               {r.verdict}
             </span>
             <p className="mt-3 max-w-[220px] text-[11px] leading-snug text-slate-400 md:text-right">
