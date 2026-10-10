@@ -153,6 +153,30 @@ export function shiftSignals(session: Session): Signal[] {
     });
   }
 
+  if (r?.conduct) {
+    const n = r.conduct.incidents.length;
+    signals.push({
+      id: "conduct",
+      label: "Professional conduct",
+      value: n === 0 ? "Respectful" : `Abusive messages (${n})`,
+      stars: n === 0 ? 5 : 0.5,
+      note: n === 0 ? "No insults or abuse towards teammates" : "Quoted in the review; people skills capped at 2/10",
+      source: "ai",
+    });
+  }
+
+  if (r?.review) {
+    const skipped = r.review.items.every((i) => i.verdict === "skipped");
+    signals.push({
+      id: "review",
+      label: "Explains own work",
+      value: skipped ? "Skipped" : `${r.review.score}/10`,
+      stars: skipped ? 0 : half(r.review.score / 2),
+      note: "Answers to the manager's questions after submitting",
+      source: "ai",
+    });
+  }
+
   if (r) {
     signals.push({
       id: "deliverable",
