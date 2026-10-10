@@ -147,6 +147,20 @@ export interface Report {
   moments: { type: "strength" | "concern"; quote: string; why: string }[];
   roleFit: { role: string; fit: number; reason: string }[];
   plan: { week: number; focus: string; actions: string[] }[];
+  // Professional conduct: abusive or disrespectful messages, with verified quotes.
+  conduct?: { respectful: boolean; incidents: { quote: string; why: string }[] };
+  // Post-submission review conversation: does the candidate understand their own work?
+  review?: {
+    score: number; // 0-10
+    summary: string;
+    items: { question: string; verdict: "clear" | "partial" | "unclear" | "skipped"; comment: string }[];
+  };
+}
+
+/** One question the manager asked after submission, and the candidate's answer. */
+export interface ReviewQA {
+  question: string;
+  answer: string; // empty = skipped
 }
 
 export interface Session {
@@ -166,5 +180,6 @@ export interface Session {
   qaReports?: number; // how many times QA has posted about test results
   startedAt: number;
   submittedAt?: number;
+  reviewQA?: ReviewQA[];
   report?: Report;
 }
