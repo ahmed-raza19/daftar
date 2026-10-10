@@ -157,6 +157,17 @@ export interface Report {
   };
 }
 
+/** A file attached to the submission. Text files keep their content here; images and
+ *  PDFs keep only metadata here (their bytes live in memory, see lib/files.ts). */
+export interface SubmissionFile {
+  id: string;
+  name: string;
+  type: string; // MIME type
+  size: number; // bytes
+  kind: "text" | "image" | "pdf" | "other";
+  text?: string; // content of text files (capped)
+}
+
 /** One question the manager asked after submission, and the candidate's answer. */
 export interface ReviewQA {
   question: string;
@@ -180,6 +191,7 @@ export interface Session {
   qaReports?: number; // how many times QA has posted about test results
   startedAt: number;
   submittedAt?: number;
+  files?: SubmissionFile[];
   reviewQA?: ReviewQA[];
   report?: Report;
 }
