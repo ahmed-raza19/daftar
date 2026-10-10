@@ -13,8 +13,13 @@ const STEPS = {
     "Scheduling surprises for later in your shift…",
     "Getting your first day ready…",
   ],
+  preparing: [
+    "Your manager is reading your submission…",
+    "Looking at what changed during your shift…",
+    "Preparing a few questions about your work…",
+  ],
   assessing: [
-    "Reading every message you sent…",
+    "Reading every message you sent and your answers…",
     "Checking which hidden facts you uncovered…",
     "Seeing how you handled the curveballs…",
     "Reviewing your deliverable like a senior would…",
@@ -41,7 +46,11 @@ export default function Loading({ kind }: { kind: keyof typeof STEPS }) {
             <span className="relative inline-flex h-3 w-3 rounded-full bg-brand-600" />
           </span>
           <h1 className="text-lg font-semibold text-slate-900">
-            {kind === "generating" ? "The AI is building your workplace" : "Your shift is being reviewed"}
+            {kind === "generating"
+              ? "The AI is building your workplace"
+              : kind === "preparing"
+                ? "Your manager has a few questions"
+                : "Your shift is being reviewed"}
           </h1>
         </div>
         <ol className="space-y-3">

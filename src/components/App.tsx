@@ -1,6 +1,6 @@
 "use client";
 
-// Top-level screen flow: setup -> (generating) -> workspace -> (assessing) -> report.
+// Top-level screen flow: setup -> (generating) -> workspace -> review conversation -> (assessing) -> report.
 // The session is saved to localStorage after every change, so a refresh never loses work.
 
 import { useCallback, useEffect, useState } from "react";
@@ -8,19 +8,21 @@ import { ApiCallError, postJson } from "@/lib/api";
 import { CODE_SCENARIO } from "@/lib/code-scenario";
 import { SAMPLE_SCENARIO } from "@/lib/sample-scenario";
 import { createSession, loadSession, saveSession } from "@/lib/session";
-import type { GraduateProfile, Report, Scenario, Session } from "@/lib/types";
+import type { GraduateProfile, Report, ReviewQA, Scenario, Session } from "@/lib/types";
 import Loading from "./Loading";
 import ReportView from "./Report";
+import ReviewChat from "./ReviewChat";
 import Setup from "./Setup";
 import Workspace from "./Workspace";
 
-type Busy = null | { kind: "generating" | "assessing" };
+type Busy = null | { kind: "generating" | "preparing" | "assessing" };
 
 export default function App() {
   // This component only renders in the browser (see ClientApp), so it can read localStorage directly.
   const [session, setSession] = useState<Session | null>(() => loadSession());
   const [busy, setBusy] = useState<Busy>(null);
   const [error, setError] = useState<string | null>(null);
+  const [reviewing, setReviewing] = useState<{ session: Session; questions: string[] } | null>(null);
 
   useEffect(() => {
     saveSession(session);
@@ -53,10 +55,25 @@ export default function App() {
     setSession(createSession({ ...profile, targetRole: profile.targetRole || role }, scenario, "sample"));
   }
 
+  // Submitting opens a short review conversation first: the manager asks 3 questions
+  // about the submitted work. If the questions can't be generated, grade directly.
   async function submit(current: Session) {
     setError(null);
-    setBusy({ kind: "assessing" });
     const submitted = { ...current, submittedAt: Date.now() };
+    setBusy({ kind: "preparing" });
+    try {
+      const res = await postJson<{ questions: string[] }>("/api/review", submitted);
+      setReviewing({ session: submitted, questions: res.questions });
+      setBusy(null);
+    } catch {
+      await grade(submitted);
+    }
+  }
+
+  async function grade(submitted: Session) {
+    setError(null);
+    setReviewing(null);
+    setBusy({ kind: "assessing" });
     try {
       const res = await postJson<{ report: Report }>("/api/assess", submitted);
       setSession({ ...submitted, report: res.report });
@@ -73,6 +90,16 @@ export default function App() {
   }
 
   if (busy) return <Loading kind={busy.kind} />;
+
+  if (reviewing) {
+    return (
+      <ReviewChat
+        session={reviewing.session}
+        questions={reviewing.questions}
+        onDone={(qa: ReviewQA[]) => grade({ ...reviewing.session, reviewQA: qa })}
+      />
+    );
+  }
 
   if (!session) {
     return (
