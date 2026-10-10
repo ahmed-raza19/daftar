@@ -79,7 +79,12 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
   const liveRevealed = useRef(session.revealedFactIds);
   const liveFired = useRef(session.firedCurveballIds);
   const skipNoticed = useRef(session.orgEvents.some((e) => e.type === "skip_level"));
-  type Job = { channel: ChannelId; skipLevel: boolean; event?: { personaId: string; description: string } };
+  type Job = {
+    channel: ChannelId;
+    skipLevel: boolean;
+    event?: { personaId: string; description: string };
+    kind?: ChatMessage["kind"];
+  };
   const queue = useRef<Job[]>([]);
   const lastQaSignature = useRef<string | null>(null);
   const processing = useRef(false);
@@ -131,7 +136,11 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
     setTyping(null);
   }
 
-  async function turn(ch: ChannelId, event?: { personaId: string; description: string }) {
+  async function turn(
+    ch: ChannelId,
+    event?: { personaId: string; description: string },
+    eventKind: ChatMessage["kind"] = "orgEvent",
+  ) {
     const res = await postJson<ChatTurnResult>("/api/chat", {
       scenario: s,
       profile: session.profile,
@@ -140,7 +149,7 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
       revealedFactIds: liveRevealed.current,
       event,
     });
-    for (const r of res.replies) await speak(ch, r.personaId, r.text, event ? "orgEvent" : "normal");
+    for (const r of res.replies) await speak(ch, r.personaId, r.text, event ? eventKind : "normal");
 
     const fresh = res.revealed.filter((v) => !liveRevealed.current.includes(v.factId));
     if (fresh.length > 0) {
@@ -198,7 +207,7 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
       while (queue.current.length > 0) {
         const job = queue.current.shift()!;
         try {
-          if (job.event) await turn(job.channel, job.event);
+          if (job.event) await turn(job.channel, job.event, job.kind);
           else await flow(job.channel, job.skipLevel);
         } catch (e) {
           setTyping(null);
@@ -251,7 +260,7 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
         : `You (QA) just ran the hidden test suite on the new hire's ${file}: ${run.passed}/${run.total} passing. Failing tests: ${failing
             .map((f) => `"${f.name}" (${f.message})`)
             .join("; ")}. File ONE short bug report in #team with an ID like BUG-2xx about the most important failing test and the observed behaviour. Do not give the fix.`;
-    queue.current.push({ channel: "team", skipLevel: false, event: { personaId: codeTask.qaId, description } });
+    queue.current.push({ channel: "team", skipLevel: false, kind: "qa", event: { personaId: codeTask.qaId, description } });
     void processQueue();
   }
 
@@ -690,7 +699,9 @@ function MessageRow({ m, session, youName }: { m: ChatMessage; session: Session;
       ? "rounded-lg border-l-4 border-amber-400 bg-amber-50 px-3 py-2"
       : m.kind === "orgEvent"
         ? "rounded-lg border-l-4 border-violet-400 bg-violet-50 px-3 py-2"
-        : "";
+        : m.kind === "qa"
+          ? "rounded-lg border-l-4 border-sky-400 bg-sky-50 px-3 py-2"
+          : "";
 
   return (
     <li className="msg-in flex gap-3">
@@ -708,6 +719,9 @@ function MessageRow({ m, session, youName }: { m: ChatMessage; session: Session;
         </div>
         <div className={`mt-0.5 ${box}`}>
           {m.kind === "curveball" && <div className="mb-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-700">⚡ Update</div>}
+          {m.kind === "qa" && (
+            <div className="mb-0.5 text-[11px] font-semibold uppercase tracking-wide text-sky-700">🧪 QA report from real test results</div>
+          )}
           {m.kind === "orgEvent" && (
             <div className="mb-0.5 text-[11px] font-semibold uppercase tracking-wide text-violet-700">👀 Your manager noticed</div>
           )}

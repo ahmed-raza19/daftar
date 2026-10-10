@@ -104,7 +104,7 @@ export interface ChatMessage {
   from: string; // persona id, YOU or SYSTEM
   text: string;
   at: number;
-  kind?: "normal" | "curveball" | "orgEvent";
+  kind?: "normal" | "curveball" | "orgEvent" | "qa";
 }
 
 export interface OrgEvent {

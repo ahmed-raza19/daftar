@@ -68,7 +68,7 @@ export function assessPrompt(session: Session): string {
               const p = personaById(s, m.from);
               return p ? `${p.name} (${p.title})` : "System";
             })();
-      const tag = m.kind === "curveball" ? " [CURVEBALL]" : "";
+      const tag = m.kind === "curveball" ? " [CURVEBALL]" : m.kind === "qa" ? " [QA REPORT]" : "";
       return `[#${m.channel}]${tag} ${who}: ${m.text}`;
     })
     .join("\n");
