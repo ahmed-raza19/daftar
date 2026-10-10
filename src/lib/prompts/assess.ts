@@ -47,6 +47,7 @@ EVIDENCE RULES
 OTHER OUTPUTS
 - facts: for EVERY private fact listed, say whether the deliverable actually used it, with a one-line comment.
 - deliverable: score 0-10, 2-3 strengths, 2-4 issues (name any planted attachment flaw that was missed), and seniorVersion: 3-5 sentences describing what a strong senior colleague would have submitted.
+- If the new hire ATTACHED FILES, mention each one by file name in strengths or issues: what it adds to the work, or that it is irrelevant or could not be opened. Describe what you actually see in an attached image or PDF.
 - moments: 2-4 key moments (strengths and concerns) with the quote and why it mattered.
 - roleFit: exactly 3 roles: the target role plus 2 adjacent roles that suit the degree, each with a 0-100 fit based only on behaviour shown in this shift.
 - plan: a 4-week plan (weeks 1-4) for the graduate's REAL career after this simulation, each with a focus and 2-3 concrete actions that are free or low-cost and accessible in Pakistan (free online courses, practice datasets or exercises, mock tasks with friends, LinkedIn, university career office...). Never refer to the fictional company or its people in the plan.
