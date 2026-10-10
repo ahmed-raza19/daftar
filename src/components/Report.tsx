@@ -18,7 +18,7 @@ interface Props {
 const anchor = (score: number) =>
   score >= 9 ? "Exceptional" : score >= 7 ? "Solid, job-ready" : score >= 5 ? "Developing" : score >= 3 ? "Weak" : "Not shown";
 
-type Tab = "skills" | "intel" | "work" | "plan";
+type Tab = "skills" | "review" | "intel" | "work" | "plan";
 
 export default function ReportView({ session, onRestart, onBack }: Props) {
   const r = session.report!;
@@ -46,6 +46,7 @@ export default function ReportView({ session, onRestart, onBack }: Props) {
 
   const tabs: [Tab, string][] = [
     ["skills", "Skills & evidence"],
+    ...(r.review ? ([["review", "Review conversation"]] as [Tab, string][]) : []),
     ["intel", `Hidden information ${foundCount}/${facts.length}`],
     ["work", s.codeTask ? "Your code & note" : "Your deliverable"],
     ["plan", "30-day plan"],
@@ -107,6 +108,25 @@ export default function ReportView({ session, onRestart, onBack }: Props) {
             </div>
           </div>
         </section>
+
+        {/* Conduct concern */}
+        {r.conduct && !r.conduct.respectful && (
+          <section className="rounded-2xl border border-red-200 bg-red-50 p-5" role="alert">
+            <h2 className="font-bold text-red-800">Conduct concern</h2>
+            <p className="mt-1 text-sm text-red-900">
+              Some of your messages to teammates were abusive or disrespectful. At a real job this could end a probation. Your
+              communication, collaboration and ownership scores are capped at 2/10.
+            </p>
+            <ul className="mt-3 space-y-2">
+              {r.conduct.incidents.map((i, n) => (
+                <li key={n} className="rounded-lg bg-white/70 p-3 text-sm">
+                  <blockquote className="italic text-red-900">“{i.quote}”</blockquote>
+                  <p className="mt-1 text-red-800">{i.why}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {/* Dashboard charts */}
         <ReportDashboard session={session} />
@@ -218,6 +238,33 @@ export default function ReportView({ session, onRestart, onBack }: Props) {
               </div>
             )}
 
+            {tab === "review" && r.review && (
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <p className="max-w-2xl text-sm text-slate-600">{r.review.summary}</p>
+                  <span className="text-sm font-semibold text-ink">Explains own work: {r.review.score}/10</span>
+                </div>
+                <ol className="space-y-3">
+                  {r.review.items.map((item, i) => (
+                    <li key={i} className="rounded-xl border border-slate-200 p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="font-medium text-ink">
+                          Q{i + 1}. {item.question}
+                        </p>
+                        <span className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-semibold ${VERDICT_STYLE[item.verdict]}`}>
+                          {item.verdict}
+                        </span>
+                      </div>
+                      <blockquote className="mt-2 border-l-2 border-slate-300 pl-3 text-sm italic text-slate-700">
+                        {session.reviewQA?.[i]?.answer ? `“${session.reviewQA[i].answer}”` : "Skipped"}
+                      </blockquote>
+                      {item.comment && <p className="mt-2 text-sm text-slate-600">{item.comment}</p>}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
+
             {tab === "intel" && (
               <ul className="grid gap-3 md:grid-cols-2">
                 {facts.map((f) => {
@@ -317,6 +364,13 @@ export default function ReportView({ session, onRestart, onBack }: Props) {
     </main>
   );
 }
+
+const VERDICT_STYLE = {
+  clear: "bg-brand-50 text-brand-800",
+  partial: "bg-amber-50 text-amber-800",
+  unclear: "bg-red-50 text-red-800",
+  skipped: "bg-slate-100 text-slate-600",
+} as const;
 
 const toneText = { good: "text-brand-800", ok: "text-amber-700", bad: "text-red-700", neutral: "text-slate-700" } as const;
 
