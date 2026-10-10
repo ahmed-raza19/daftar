@@ -44,6 +44,7 @@ export function createSession(
     firedCurveballIds: [],
     orgEvents: [],
     deliverable: "",
+    ...(s.codeTask ? { code: s.codeTask.starterCode, codeRuns: [], qaReports: 0 } : {}),
     startedAt: now,
   };
 }
@@ -113,6 +114,18 @@ export function sessionTranscript(session: Session): string {
     "DELIVERABLE",
     session.deliverable.trim() || "(not submitted yet)",
   ];
+
+  if (s.codeTask) {
+    const last = session.codeRuns?.at(-1);
+    lines.push(
+      "",
+      `CODE (${s.codeTask.fileName})`,
+      session.code ?? "",
+      "",
+      `HIDDEN TESTS: ${last ? `${last.passed}/${last.total} passed` : "never run"} (${session.codeRuns?.length ?? 0} runs)`,
+      ...(last?.results.map((r) => `- ${r.passed ? "PASS" : "FAIL"} ${r.name}${r.message ? ` (${r.message})` : ""}`) ?? []),
+    );
+  }
 
   const r = session.report;
   if (r) {
