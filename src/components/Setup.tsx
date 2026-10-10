@@ -19,11 +19,12 @@ const ROLES = [
   "Content Writer",
 ];
 
-const STEPS = [
-  { n: "1", title: "Pick your role", text: "Tell us your degree and the job you want." },
-  { n: "2", title: "Meet your AI team", text: "A CEO, manager, senior, peer, another department and a client. Each knows something you need." },
-  { n: "3", title: "Do the real work", text: "Ask the right people, handle surprises, then submit your deliverable." },
-  { n: "4", title: "Get your report", text: "Six workplace skills scored with quotes from your own messages, plus a 30-day plan." },
+// "How it works", told as the schedule of a first day at work.
+const SCHEDULE = [
+  { time: "09:00", title: "Get your badge", text: "Tell us your degree and the job you want." },
+  { time: "09:05", title: "Meet your team", text: "A CEO, your manager, a senior, a peer, another department and a client. All AI, each knowing something you need." },
+  { time: "09:10", title: "Do the work", text: "Ask the right people, handle surprises, ship your deliverable. In Code Shift, real tests run on your Python." },
+  { time: "17:00", title: "Read your review", text: "Six workplace skills, scored with quotes from your own messages, and a 30-day plan." },
 ];
 
 interface Props {
@@ -71,38 +72,39 @@ export default function Setup({ error, onStart, onSample, onLoad }: Props) {
     <main className="flex-1">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-6">
         <Logo />
-        <span className="hidden text-xs text-slate-500 sm:block">AICON&apos;26 · Build With AI · Team nexora</span>
+        <span className="hidden text-xs text-slate-500 sm:block">Team nexora, AICON&apos;26 Build With AI</span>
       </header>
 
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 pb-16 pt-4 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:gap-14 lg:pt-10">
+      <div className="mx-auto grid max-w-6xl gap-12 px-4 pb-16 pt-4 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:pt-10">
         <section>
-          <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-800 ring-1 ring-brand-200">
-            Multi-agent workplace simulation for fresh graduates
-          </p>
-          <h1 className="text-4xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-5xl">
-            Your first week on the job,{" "}
-            <span className="text-brand-700">before your first job.</span>
+          <h1 className="max-w-xl text-5xl font-bold leading-[1.04] text-ink sm:text-6xl">
+            Your first week on the job, before your first job.
           </h1>
-          <p className="mt-5 max-w-xl text-lg leading-relaxed text-slate-600">
+          <p className="mt-6 max-w-lg text-lg leading-relaxed text-slate-600">
             Join an AI team at a fictional Pakistani company. Everyone has their own role,
-            personality and private knowledge, so you only succeed by asking the right people the
-            right questions, like at a real job.
+            personality and private knowledge, so you only succeed the way you would at a real
+            job: by asking the right people the right questions.
           </p>
 
-          <ol className="mt-10 grid gap-4 sm:grid-cols-2">
-            {STEPS.map((s) => (
-              <li key={s.n} className="rounded-xl border border-slate-200 bg-white p-4">
-                <div className="mb-2 flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">
-                  {s.n}
-                </div>
-                <h3 className="font-semibold text-slate-900">{s.title}</h3>
-                <p className="mt-1 text-sm leading-relaxed text-slate-600">{s.text}</p>
-              </li>
-            ))}
-          </ol>
+          <div className="mt-12 max-w-lg">
+            <h2 className="text-base font-semibold text-ink">Your first day</h2>
+            <ol className="mt-4 border-l-2 border-slate-200">
+              {SCHEDULE.map((s) => (
+                <li key={s.time} className="relative pb-6 pl-6 last:pb-0">
+                  <span className="absolute -left-[7px] top-[7px] h-3 w-3 rounded-full border-2 border-background bg-brand-700" />
+                  <div className="flex items-baseline gap-3">
+                    <time className="font-mono text-xs text-slate-500">{s.time}</time>
+                    <h3 className="font-semibold text-ink">{s.title}</h3>
+                  </div>
+                  <p className="mt-1 text-sm leading-relaxed text-slate-600">{s.text}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
         </section>
 
         <section className="lg:pt-2">
+          <IdBadge name={name} degree={degree} role={targetRole} />
           <form
             className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-7"
             onSubmit={(e) => {
@@ -111,7 +113,7 @@ export default function Setup({ error, onStart, onSample, onLoad }: Props) {
             }}
           >
             <h2 className="text-xl font-semibold text-slate-900">Start your first shift</h2>
-            <p className="mt-1 text-sm text-slate-500">About 15 minutes. Gemini generates a new company for you.</p>
+            <p className="mt-1 text-sm text-slate-500">About 15 minutes. The AI generates a new company for you.</p>
 
             {hasKey === false && (
               <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
@@ -166,7 +168,7 @@ export default function Setup({ error, onStart, onSample, onLoad }: Props) {
                   maxLength={2000}
                 />
                 <p className="mt-1.5 text-xs text-slate-500">
-                  Don&apos;t include your phone number, CNIC, address or other personal details. This text is sent to Google&apos;s Gemini API.
+                  Don&apos;t include your phone number, CNIC, address or other personal details. This text is sent to our AI providers (Gemini or Groq).
                 </p>
               </Field>
             </div>
@@ -229,6 +231,61 @@ export default function Setup({ error, onStart, onSample, onLoad }: Props) {
         </section>
       </div>
     </main>
+  );
+}
+
+/**
+ * The first-day ID badge. It fills in live as the graduate types, so the very
+ * first interaction already feels like joining a company.
+ */
+function IdBadge({ name, degree, role }: { name: string; degree: string; role: string }) {
+  const shown = name.trim() || "Your name";
+  const letters = name.trim()
+    ? name
+        .trim()
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((w) => w[0]?.toUpperCase())
+        .join("")
+    : "?";
+  // A stable, made-up employee number derived from the name.
+  const num = [...name.trim().toLowerCase()].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 9000, 7) + 1000;
+
+  return (
+    <div className="badge-in relative mx-auto mb-6 w-full max-w-sm" aria-label="Your FirstShift ID badge preview">
+      {/* lanyard clip */}
+      <div className="mx-auto h-5 w-16 rounded-t-md bg-clip shadow-sm">
+        <div className="mx-auto h-1.5 w-8 translate-y-1.5 rounded-full bg-amber-700/40" />
+      </div>
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_12px_30px_-12px_rgba(14,94,70,0.35)]">
+        <div className="flex items-center justify-between bg-brand-700 px-4 py-2 text-white">
+          <span className="font-display text-sm font-semibold">FirstShift</span>
+          <span className="text-xs text-brand-100">Day 1</span>
+        </div>
+        <div className="flex items-center gap-4 px-4 py-4">
+          <div className="flex h-16 w-14 shrink-0 items-center justify-center rounded-lg bg-brand-50 font-display text-xl font-bold text-brand-800 ring-1 ring-brand-200">
+            {letters}
+          </div>
+          <div className="min-w-0">
+            <div className={`truncate font-display text-xl font-bold ${name.trim() ? "text-ink" : "text-slate-300"}`}>{shown}</div>
+            <div className={`truncate text-sm ${role.trim() ? "text-slate-700" : "text-slate-400"}`}>{role.trim() || "The role you want"}</div>
+            <div className="truncate text-xs text-slate-500">{degree.trim() || "Your degree"}</div>
+          </div>
+        </div>
+        <div className="flex items-center justify-between border-t border-dashed border-slate-200 px-4 py-2">
+          <span className="font-mono text-[11px] text-slate-500">ID FS-26-{num}</span>
+          {/* barcode */}
+          <span
+            aria-hidden
+            className="h-5 w-24 opacity-70"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(90deg, #1e2433 0 2px, transparent 2px 4px, #1e2433 4px 5px, transparent 5px 8px, #1e2433 8px 11px, transparent 11px 12px)",
+            }}
+          />
+        </div>
+      </div>
+    </div>
   );
 }
 
