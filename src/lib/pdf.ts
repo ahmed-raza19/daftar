@@ -75,8 +75,13 @@ function drawStars(doc: jsPDF, value: number, x: number, y: number, size: number
 }
 
 export async function downloadReportPdf(session: Session) {
+  const doc = buildReportPdf(session);
+  doc?.save(`${fileStem(session)}-review.pdf`);
+}
+
+export function buildReportPdf(session: Session): jsPDF | null {
   const r = session.report;
-  if (!r) return;
+  if (!r) return null;
   const s = session.scenario;
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
@@ -90,8 +95,10 @@ export async function downloadReportPdf(session: Session) {
       y = 56;
     }
   };
-  const heading = (text: string) => {
-    ensure(40);
+  // minSpace: room the section needs below its heading, so a heading is never
+  // left alone at the bottom of a page.
+  const heading = (text: string, minSpace = 40) => {
+    ensure(minSpace + 36);
     y += 26;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
@@ -163,7 +170,7 @@ export async function downloadReportPdf(session: Session) {
   y = Math.max(y + summary.length * 13, boxY + 104) + 6;
 
   // ---- At a glance ----
-  heading("At a glance");
+  heading("At a glance", 120);
   const signals = shiftSignals(session);
   autoTable(doc, {
     startY: y + 4,
@@ -191,7 +198,7 @@ export async function downloadReportPdf(session: Session) {
   y = lastY();
 
   // ---- Skills bar chart ----
-  heading("Six workplace skills (0-10)");
+  heading("Six workplace skills (0-10)", 150);
   const barX = M + 175;
   const barW = W - M - barX - 60;
   for (const { id, label } of SKILLS) {
@@ -218,7 +225,7 @@ export async function downloadReportPdf(session: Session) {
   y += 8;
 
   // ---- Evidence ----
-  heading("Evidence and feedback");
+  heading("Evidence and feedback", 130);
   autoTable(doc, {
     startY: y + 4,
     margin: { left: M, right: M },
@@ -241,7 +248,7 @@ export async function downloadReportPdf(session: Session) {
   // ---- Code Shift tests ----
   const lastRun = session.codeRuns?.at(-1);
   if (s.codeTask && lastRun) {
-    heading(`Hidden tests: ${lastRun.passed}/${lastRun.total} passing (run by the app)`);
+    heading(`Hidden tests: ${lastRun.passed}/${lastRun.total} passing (run by the app)`, 110);
     autoTable(doc, {
       startY: y + 4,
       margin: { left: M, right: M },
@@ -262,7 +269,7 @@ export async function downloadReportPdf(session: Session) {
   // ---- Hidden information ----
   const facts = s.personas.flatMap((p) => p.privateFacts.map((f) => ({ ...f, holder: p })));
   const found = facts.filter((f) => session.revealedFactIds.includes(f.id)).length;
-  heading(`Hidden information: ${found} of ${facts.length} found`);
+  heading(`Hidden information: ${found} of ${facts.length} found`, 110);
   autoTable(doc, {
     startY: y + 4,
     margin: { left: M, right: M },
@@ -325,7 +332,7 @@ export async function downloadReportPdf(session: Session) {
   y += senior.length * 12 + 26;
 
   // ---- 30-day plan ----
-  heading("Your 30-day plan");
+  heading("Your 30-day plan", 120);
   autoTable(doc, {
     startY: y + 4,
     margin: { left: M, right: M },
@@ -354,5 +361,5 @@ export async function downloadReportPdf(session: Session) {
     doc.text(`Page ${i} of ${pages}`, W - M, H - 24, { align: "right" });
   }
 
-  doc.save(`${fileStem(session)}-review.pdf`);
+  return doc;
 }
