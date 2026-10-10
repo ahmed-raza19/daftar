@@ -1,4 +1,4 @@
-import { errorResponse, generateJson } from "@/lib/gemini";
+import { errorResponse, generateJson } from "@/lib/ai";
 import { channelInfo, personaById } from "@/lib/org";
 import {
   CHAT_SCHEMA,

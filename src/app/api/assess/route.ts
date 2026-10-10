@@ -1,4 +1,4 @@
-import { errorResponse, generateJson } from "@/lib/gemini";
+import { errorResponse, generateJson } from "@/lib/ai";
 import { ASSESS_SCHEMA, ASSESS_SYSTEM, assessPrompt, finalizeReport, type AssessOutput } from "@/lib/prompts/assess";
 import type { Session } from "@/lib/types";
 

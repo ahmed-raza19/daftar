@@ -1,4 +1,4 @@
-// Server-side Gemini client.
+// Gemini provider (primary).
 // - Reads GEMINI_API_KEY from the environment (never sent to the browser).
 // - Tries a list of models in order, so a retired preview model or a
 //   per-model rate limit doesn't take the app down.
@@ -6,21 +6,13 @@
 
 import "server-only";
 import { ApiError, GoogleGenAI, ThinkingLevel } from "@google/genai";
+import { AiError, parseJson, type Effort, type JsonRequest, type JsonResult } from "./shared";
 
 const DEFAULT_MODELS = [
   "gemini-3-flash-preview",
   "gemini-flash-latest",
   "gemini-2.5-flash",
 ];
-
-export class AiError extends Error {
-  constructor(
-    public code: "NO_KEY" | "RATE_LIMIT" | "AI_ERROR",
-    message: string,
-  ) {
-    super(message);
-  }
-}
 
 let client: GoogleGenAI | null = null;
 let workingModel: string | null = null;
@@ -37,7 +29,7 @@ function getClient(): GoogleGenAI {
   return client;
 }
 
-export function hasApiKey(): boolean {
+export function hasGeminiKey(): boolean {
   return Boolean(process.env.GEMINI_API_KEY);
 }
 
@@ -48,10 +40,6 @@ function modelOrder(): string[] {
   );
   return [...new Set(list)];
 }
-
-// How long the model may "think" before answering: low = fast chat replies,
-// medium = scenario generation, high = careful grading.
-type Effort = "low" | "medium" | "high";
 
 function thinkingConfig(model: string, effort: Effort) {
   if (model.startsWith("gemini-3")) {
@@ -64,23 +52,7 @@ function thinkingConfig(model: string, effort: Effort) {
   return undefined;
 }
 
-function parseJson<T>(text: string): T {
-  const cleaned = text
-    .trim()
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/```$/, "")
-    .trim();
-  return JSON.parse(cleaned) as T;
-}
-
-export interface JsonRequest {
-  system: string;
-  prompt: string;
-  schema: object; // JSON Schema for the response
-  effort?: Effort;
-}
-
-export async function generateJson<T>(req: JsonRequest): Promise<{ data: T; model: string }> {
+export async function geminiJson<T>(req: JsonRequest): Promise<JsonResult<T>> {
   const ai = getClient();
   const effort = req.effort ?? "high";
   let lastError: unknown = null;
@@ -106,7 +78,7 @@ export async function generateJson<T>(req: JsonRequest): Promise<{ data: T; mode
         if (!text) throw new Error("Empty response from Gemini");
         const data = parseJson<T>(text);
         workingModel = model;
-        return { data, model };
+        return { data, model, provider: "gemini" };
       } catch (err) {
         lastError = err;
         if (err instanceof ApiError) {
@@ -139,13 +111,4 @@ export async function generateJson<T>(req: JsonRequest): Promise<{ data: T; mode
   }
   const msg = lastError instanceof Error ? lastError.message : String(lastError);
   throw new AiError("AI_ERROR", `Gemini request failed: ${msg}`);
-}
-
-export function errorResponse(err: unknown): Response {
-  if (err instanceof AiError) {
-    const status = err.code === "NO_KEY" ? 503 : err.code === "RATE_LIMIT" ? 429 : 502;
-    return Response.json({ error: err.message, code: err.code }, { status });
-  }
-  const msg = err instanceof Error ? err.message : "Unexpected error";
-  return Response.json({ error: msg, code: "AI_ERROR" }, { status: 500 });
 }

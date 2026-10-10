@@ -1,4 +1,4 @@
-import { errorResponse, generateJson } from "@/lib/gemini";
+import { errorResponse, generateJson } from "@/lib/ai";
 import { SCENARIO_SCHEMA, SCENARIO_SYSTEM, scenarioPrompt } from "@/lib/prompts/scenario";
 import { normalizeScenario } from "@/lib/scenario";
 import type { GraduateProfile } from "@/lib/types";
