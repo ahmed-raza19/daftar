@@ -5,6 +5,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ApiCallError, postJson } from "@/lib/api";
+import { CODE_SCENARIO } from "@/lib/code-scenario";
 import { SAMPLE_SCENARIO } from "@/lib/sample-scenario";
 import { createSession, loadSession, saveSession } from "@/lib/session";
 import type { GraduateProfile, Report, Scenario, Session } from "@/lib/types";
@@ -45,15 +46,11 @@ export default function App() {
     }
   }
 
-  function startSample(profile: GraduateProfile) {
+  function startSample(profile: GraduateProfile, kind: "data" | "code") {
     setError(null);
-    setSession(
-      createSession(
-        { ...profile, targetRole: profile.targetRole || "Data Analyst" },
-        SAMPLE_SCENARIO,
-        "sample",
-      ),
-    );
+    const scenario = kind === "code" ? CODE_SCENARIO : SAMPLE_SCENARIO;
+    const role = kind === "code" ? "AI/ML Engineer" : "Data Analyst";
+    setSession(createSession({ ...profile, targetRole: profile.targetRole || role }, scenario, "sample"));
   }
 
   async function submit(current: Session) {

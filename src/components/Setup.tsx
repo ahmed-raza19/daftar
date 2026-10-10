@@ -29,7 +29,7 @@ const STEPS = [
 interface Props {
   error: string | null;
   onStart: (p: GraduateProfile) => void;
-  onSample: (p: GraduateProfile) => void;
+  onSample: (p: GraduateProfile, kind: "data" | "code") => void;
   onLoad: (s: Session) => void;
 }
 
@@ -182,13 +182,24 @@ export default function Setup({ error, onStart, onSample, onLoad }: Props) {
             <div className="mt-5 border-t border-slate-100 pt-5">
               <button
                 type="button"
-                onClick={() => onSample(profile())}
-                className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-800 transition hover:bg-slate-50"
+                onClick={() => onSample(profile(), "code")}
+                className="w-full rounded-lg border border-teal-300 bg-teal-50 px-4 py-2.5 text-left text-sm font-medium text-teal-900 transition hover:bg-teal-100"
               >
-                Try the sample shift: Junior Data Analyst at TezTokri
+                <span className="block">Code Shift: AI/ML Engineer at Rabta</span>
+                <span className="block text-xs font-normal text-teal-800/80">
+                  Write Python with an 8-person AI team. Hidden tests really run in your browser.
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onSample(profile(), "data")}
+                className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-2.5 text-left text-sm font-medium text-slate-800 transition hover:bg-slate-50"
+              >
+                <span className="block">Sample shift: Junior Data Analyst at TezTokri</span>
+                <span className="block text-xs font-normal text-slate-500">Analyse a promo with a 6-person AI team.</span>
               </button>
               <p className="mt-1.5 text-center text-xs text-slate-500">
-                Pre-written company, starts instantly. Your AI teammates still reply live.
+                Pre-written companies, start instantly. Your AI teammates still reply live.
               </p>
               <button
                 type="button"
