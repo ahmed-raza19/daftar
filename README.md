@@ -4,6 +4,10 @@
 
 FirstShift is a multi-agent workplace simulation for fresh graduates. You join an AI-generated team at a fictional Pakistani company: a CEO, your manager, a senior colleague, a peer, someone from another department and an external client. Each of them has their own personality, authority and **private knowledge**. You only do the task well if you ask the right people the right questions, handle surprises, and respect the hierarchy. At the end, an AI reviewer grades six workplace skills, quoting your own messages as evidence.
 
+Two ways to play:
+- **Code Shift (AI/ML Engineer):** implement `classify_ticket()` in Python for a fictional Islamabad helpdesk startup, with an 8-person AI team. **Hidden tests really run in your browser**, and the QA bot files bugs from the real results. Each teammate's private fact maps to a hidden test, so asking the right people is how you get the tests green.
+- **Any role:** Gemini generates a fresh company, team and task for the role you type in (or try the pre-written Data Analyst sample).
+
 Built at **AICON'26 Build With AI** (EdTech & Workforce) by **team nexora**.
 
 ---
@@ -52,6 +56,10 @@ Built at **AICON'26 Build With AI** (EdTech & Workforce) by **team nexora**.
 - **Information isolation:** a persona in a DM only sees the channels they belong to, never other people's DMs. The code decides this before the prompt is built.
 - **Hierarchy:** levels, reporting lines and `canApprove` lists are part of every persona. Asking a peer to approve a deadline gets redirected; messaging the CEO directly triggers your manager's reaction.
 - **Structured outputs:** every Gemini call returns JSON that matches a schema, and is validated/repaired in code (`src/lib/scenario.ts`, `src/app/api/chat/route.ts`).
+- **Real tests, not AI opinions:** in Code Shift the app runs the hidden test suite with Pyodide (Python in WebAssembly) in a Web Worker, so candidate code never runs on our server. The QA agent reports the actual results, and the assessor must treat them as ground truth.
+- **Verified evidence:** a fact only counts as "discovered" if the teammate's reply really contains it, and a grading quote only counts if the candidate really wrote it. Both are checked in code.
+- **Provider chain:** Gemini is primary; if it fails or hits its rate limit, the same request goes to Claude, then Groq (only providers with a key are used). See `src/lib/ai/`.
+- **Prompt-injection guard:** transcript, deliverable and code are passed to the assessor as data; instructions inside them are ignored and recorded as a concern.
 - **No model training.** We use a pre-trained model (Gemini) through its API. The AI work is persona design, prompt design, structured outputs and rubric-based grading.
 - **Measured:** the same strong shift graded 4 times scored 90–93; a weak shift scored 16–22. Details in [EVALUATION.md](EVALUATION.md).
 
@@ -62,11 +70,11 @@ Built at **AICON'26 Build With AI** (EdTech & Workforce) by **team nexora**.
 - The assessor is told **not to penalise non-native English or Roman Urdu**, and to ignore name, gender and university.
 - Every score must quote the graduate's own words. The overall score is computed by code, not the model.
 - The report is **practice feedback, not a hiring decision**.
-- The optional background field warns users not to enter phone numbers, CNIC or other personal data, because text is sent to the Gemini API.
+- The optional background field warns users not to enter phone numbers, CNIC or other personal data, because text is sent to the AI provider.
 
 ## Run it locally
 
-Requirements: Node.js 20+ and a Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey).
+Requirements: Node.js 20+ and a Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey). Optional backups: `ANTHROPIC_API_KEY` (Claude) and `GROQ_API_KEY` (Groq).
 
 ```bash
 npm install
@@ -74,13 +82,13 @@ cp .env.example .env.local   # then put your key in GEMINI_API_KEY
 npm run dev
 ```
 
-Open http://localhost:3000. Use **Start my first shift** for a freshly generated company, or **Try the sample shift** for a pre-written one that starts instantly (teammates still reply live through Gemini).
+Open http://localhost:3000. Use **Code Shift** for the Python task with real tests, **Start my first shift** for a freshly generated company, or the **Data Analyst sample**. Pre-written scenarios start instantly; teammates still reply live through the AI.
 
 ## Deploy (Vercel)
 
 1. Push this repo to GitHub.
 2. Import it at vercel.com → New Project.
-3. Add the environment variable `GEMINI_API_KEY` (optionally `GEMINI_MODEL`).
+3. Add the environment variable `GEMINI_API_KEY` (optionally `ANTHROPIC_API_KEY`, `GROQ_API_KEY`).
 4. Deploy.
 
 ## Project structure
@@ -91,19 +99,22 @@ Open http://localhost:3000. Use **Start my first shift** for a freshly generated
 | `src/lib/prompts/chat.ts` | AI #2: director agent prompt + JSON schema |
 | `src/lib/prompts/assess.ts` | AI #3: assessor prompt, schema, score computation |
 | `src/lib/org.ts` | Deterministic org rules: channels, visibility, availability, skip-level, org tree |
-| `src/lib/gemini.ts` | Server-side Gemini client with model fallback and error handling |
+| `src/lib/ai/` | Provider chain (`index.ts`) and providers: Gemini (primary), Claude, Groq |
+| `src/lib/code-scenario.ts` | Code Shift scenario: Rabta, 8 personas, hidden Python tests |
+| `src/lib/pyrunner.ts` | Runs Python tests in the browser (Pyodide in a Web Worker) |
 | `src/lib/scenario.ts` | Validates and repairs the generated scenario |
 | `src/lib/sample-scenario.ts` | Hand-written sample scenario (TezTokri, Lahore) |
 | `src/lib/session.ts` | Session creation, local saving, `.txt` transcript and `.json` export |
 | `src/app/api/*` | API routes: `scenario`, `chat`, `assess`, `health` |
-| `src/components/*` | UI: setup, workspace, org chart, report |
+| `src/components/*` | UI: setup, workspace, code editor, org chart, report |
 
 ## Disclosure
 
 - Built during AICON'26 Build With AI (10 October 2026).
 - Started from the standard `create-next-app` template (Next.js 16).
-- Uses the Google Gemini API (`@google/genai`) for all AI features.
-- An AI coding assistant (Claude) helped write code; the team designed the product, reviewed the code and is responsible for it.
+- AI models via APIs: Google Gemini (`@google/genai`, primary), Anthropic Claude (`@anthropic-ai/sdk`, backup) and Groq (backup). No models were trained.
+- Python tests run with [Pyodide](https://pyodide.org) loaded from the jsDelivr CDN.
+- An AI coding assistant (Claude Code) helped write code; the team designed the product, reviewed the code and is responsible for it.
 - The sample scenario and all generated companies and people are fictional.
 
 ## Limitations
