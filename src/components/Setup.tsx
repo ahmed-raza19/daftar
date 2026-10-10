@@ -4,11 +4,14 @@
 // type a name, pick a shift (Code Shift, Data Analyst, or any role), press start.
 // Only "Any role" needs the longer form, so it expands in place.
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { parseSessionFile } from "@/lib/session";
 import type { GraduateProfile, Session } from "@/lib/types";
-
-const REPO = "https://github.com/ahmed-raza19/firstshift";
+import LiveShift from "./site/LiveShift";
+import ShowcaseTabs from "./site/ShowcaseTabs";
+import SiteFooter from "./site/SiteFooter";
+import SiteHeader from "./site/SiteHeader";
 
 const ROLES = [
   "Software Engineer",
@@ -65,29 +68,6 @@ const SHIFTS: {
   },
 ];
 
-// "How it works", told as the schedule of a first day at work.
-const SCHEDULE = [
-  { time: "09:00", title: "Get your badge", text: "Pick a shift and tell us your name." },
-  { time: "09:05", title: "Meet your team", text: "A CEO, your manager, seniors, peers, other departments and a client. All AI, each knowing something you need." },
-  { time: "09:10", title: "Do the work", text: "Ask the right people, handle surprises, ship your deliverable. In Code Shift, real tests run on your Python." },
-  { time: "17:00", title: "Read your review", text: "Six workplace skills scored with quotes from your own messages, plus a 30-day plan." },
-];
-
-const DIFFERENT = [
-  {
-    title: "Teammates with secrets",
-    text: "Every AI coworker knows something the task needs. Nobody hands it to you; you have to ask the right person, the way real jobs work.",
-  },
-  {
-    title: "Real tests, not opinions",
-    text: "In Code Shift your Python runs against hidden tests in your browser, and the QA bot files bugs from the actual results.",
-  },
-  {
-    title: "Evidence you can check",
-    text: "Every score quotes your own words, and the app checks the quotes are real. Same shift, graded four times: 90 to 93.",
-  },
-];
-
 interface Props {
   error: string | null;
   onStart: (p: GraduateProfile) => void;
@@ -105,6 +85,14 @@ export default function Setup({ error, onStart, onSample, onLoad }: Props) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
+
+  // Links like "Start a shift" on other pages point to /#start. This page renders in the
+  // browser, so jump to the chooser once it exists.
+  useEffect(() => {
+    if (window.location.hash !== "#start") return;
+    const t = setTimeout(() => document.getElementById("start")?.scrollIntoView({ behavior: "smooth", block: "center" }), 150);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     fetch("/api/health")
@@ -145,39 +133,7 @@ export default function Setup({ error, onStart, onSample, onLoad }: Props) {
 
   return (
     <div className="flex flex-1 flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/85 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 sm:px-6">
-          <Logo />
-          <nav className="hidden items-center gap-5 text-sm text-slate-600 md:flex">
-            <a href="#how" className="hover:text-ink">How it works</a>
-            <a href="#why" className="hover:text-ink">Why it&apos;s different</a>
-            <a href={`${REPO}/blob/master/EVALUATION.md`} target="_blank" rel="noreferrer" className="hover:text-ink">
-              Evaluation
-            </a>
-          </nav>
-          <div className="ml-auto flex items-center gap-3">
-            <a
-              href={REPO}
-              target="_blank"
-              rel="noreferrer"
-              className="hidden text-sm text-slate-600 hover:text-ink sm:inline"
-            >
-              GitHub
-            </a>
-            <button
-              type="button"
-              onClick={() => {
-                document.getElementById("start")?.scrollIntoView({ behavior: "smooth", block: "center" });
-                setTimeout(() => nameRef.current?.focus(), 300);
-              }}
-              className="rounded-lg bg-brand-700 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-brand-800"
-            >
-              Start a shift
-            </button>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
       <main className="flex-1">
         {/* Hero */}
@@ -192,6 +148,13 @@ export default function Setup({ error, onStart, onSample, onLoad }: Props) {
               people, handle surprises, ship your work, and get a review built on what you
               actually did.
             </p>
+            <ul className="mt-5 flex flex-wrap gap-2 text-sm">
+              {["6-8 AI teammates", "Hidden information to uncover", "Real Python tests", "Review in 15 minutes"].map((c) => (
+                <li key={c} className="rounded-full border border-slate-200 bg-white px-3 py-1 text-slate-700">
+                  {c}
+                </li>
+              ))}
+            </ul>
           </div>
 
           <div id="start" className="scroll-mt-24 lg:col-start-2 lg:row-span-2 lg:row-start-1">
@@ -350,128 +313,60 @@ export default function Setup({ error, onStart, onSample, onLoad }: Props) {
           </div>
 
           <div className="lg:col-start-1 lg:row-start-2">
-            <ShiftPeek />
+            <LiveShift />
           </div>
         </section>
 
-        {/* How it works */}
-        <section id="how" className="scroll-mt-20 border-t border-slate-200 bg-white">
-          <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-            <h2 className="text-2xl font-bold text-ink sm:text-3xl">How a shift works</h2>
-            <ol className="mt-8 grid gap-8 md:grid-cols-4 md:gap-6">
-              {SCHEDULE.map((s, i) => (
-                <li key={s.time} className="relative">
-                  <div className="flex items-center gap-3">
-                    <time className="font-mono text-sm font-medium text-brand-700">{s.time}</time>
-                    {i < SCHEDULE.length - 1 && <span aria-hidden className="hidden h-px flex-1 bg-slate-200 md:block" />}
-                  </div>
-                  <h3 className="mt-2 font-semibold text-ink">{s.title}</h3>
-                  <p className="mt-1 text-sm leading-relaxed text-slate-600">{s.text}</p>
-                </li>
-              ))}
-            </ol>
+        <ShowcaseTabs />
+
+        {/* Two audiences */}
+        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+          <h2 className="max-w-xl text-3xl font-bold text-ink sm:text-4xl">One shift, two ways to use it</h2>
+          <div className="mt-8 grid gap-5 md:grid-cols-2">
+            <Link href="/how-it-works" className="group rounded-2xl border border-slate-200 bg-white p-6 transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md">
+              <div className="text-sm font-semibold text-brand-700">For graduates</div>
+              <h3 className="mt-1 font-display text-xl font-bold text-ink">Practise the job before the interview</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                Work with a team, handle a moved deadline and a pushy client, and get honest feedback with a 30-day plan.
+              </p>
+              <span className="mt-4 inline-block text-sm font-semibold text-brand-800 group-hover:underline">How a shift works →</span>
+            </Link>
+            <Link href="/for-employers" className="group rounded-2xl border border-slate-200 bg-white p-6 transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md">
+              <div className="text-sm font-semibold text-brand-700">For employers</div>
+              <h3 className="mt-1 font-display text-xl font-bold text-ink">See how a candidate works, not just their CV</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                A trial shift with measured signals: who they asked, how they handled surprises, and whether their code passes.
+              </p>
+              <span className="mt-4 inline-block text-sm font-semibold text-brand-800 group-hover:underline">Daftar for employers →</span>
+            </Link>
           </div>
         </section>
 
-        {/* Why it's different */}
-        <section id="why" className="scroll-mt-20">
-          <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-            <h2 className="text-2xl font-bold text-ink sm:text-3xl">Why it&apos;s different from a chatbot</h2>
-            <div className="mt-8 grid gap-8 md:grid-cols-3">
-              {DIFFERENT.map((d) => (
-                <div key={d.title} className="border-l-2 border-brand-600 pl-4">
-                  <h3 className="font-semibold text-ink">{d.title}</h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-slate-600">{d.text}</p>
-                </div>
-              ))}
+        {/* Closing call to action */}
+        <section className="mx-auto mb-16 max-w-6xl px-4 sm:px-6">
+          <div className="flex flex-col items-start justify-between gap-6 rounded-2xl bg-brand-700 px-6 py-8 text-white sm:flex-row sm:items-center sm:px-10">
+            <div>
+              <h2 className="text-2xl font-bold sm:text-3xl">Your first shift takes 15 minutes.</h2>
+              <p className="mt-1 text-brand-100">No sign-up. Your work stays in your browser.</p>
             </div>
-            <div className="mt-10">
+            <div className="flex flex-wrap gap-3">
               <button
                 type="button"
                 onClick={() => pick("code")}
-                className="rounded-lg bg-ink px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
+                className="rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-brand-800 transition hover:bg-brand-50"
               >
-                Try Code Shift now
+                Start Code Shift
               </button>
+              <Link href="/evaluation" className="rounded-lg border border-white/40 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10">
+                How we measured the grader
+              </Link>
             </div>
           </div>
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-800 bg-ink text-slate-300">
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr]">
-          <div>
-            <Logo dark />
-            <p className="mt-3 max-w-sm text-sm leading-relaxed text-slate-400">
-              A multi-agent workplace simulation for fresh graduates. Companies and people are
-              fictional. Your review is AI-generated practice feedback, not a hiring decision.
-            </p>
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold text-white">Shifts</h3>
-            <ul className="mt-3 space-y-2 text-sm">
-              <li><button type="button" onClick={() => pick("code")} className="hover:text-white">Code Shift: AI/ML Engineer</button></li>
-              <li><button type="button" onClick={() => pick("data")} className="hover:text-white">Data Analyst shift</button></li>
-              <li><button type="button" onClick={() => pick("custom")} className="hover:text-white">Any role you want</button></li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold text-white">Project</h3>
-            <ul className="mt-3 space-y-2 text-sm">
-              <li><a href={REPO} target="_blank" rel="noreferrer" className="hover:text-white">Source code on GitHub</a></li>
-              <li><a href={`${REPO}/blob/master/EVALUATION.md`} target="_blank" rel="noreferrer" className="hover:text-white">How we measured the grader</a></li>
-              <li><a href={`${REPO}#disclosure`} target="_blank" rel="noreferrer" className="hover:text-white">Tools and disclosures</a></li>
-            </ul>
-          </div>
-        </div>
-        <div className="border-t border-slate-800">
-          <p className="mx-auto max-w-6xl px-4 py-4 text-xs text-slate-500 sm:px-6">
-            Built by team nexora at AICON&apos;26 Build With AI (EdTech &amp; Workforce), NUST Islamabad.
-          </p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
-  );
-}
-
-/** A small, static peek at what a shift looks like, so first-time visitors get it at a glance. */
-function ShiftPeek() {
-  const lines = [
-    { who: "Omer Farooq", tag: "Manager", color: "#7c3aed", text: "Your task: implement classify_ticket(). Hamza's hidden tests decide if it ships." },
-    { who: "Hamza Qureshi", tag: "QA", color: "#be185d", text: "BUG-201: urgent tickets like 'charged twice' are marked low priority.", qa: true },
-    { who: "You", tag: "", color: "#334155", text: "Asked Farah which words mean urgent. Fixed it: 9/9 tests passing." },
-  ];
-  return (
-    <figure className="max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-label="Example of a shift">
-      <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-4 py-2 text-xs text-slate-500">
-        <span className="font-semibold text-slate-700"># team</span>
-        <span>Rabta, Islamabad</span>
-        <span className="ml-auto">Example from Code Shift</span>
-      </div>
-      <ul className="space-y-3 px-4 py-4">
-        {lines.map((l) => (
-          <li key={l.who} className="flex gap-3">
-            <span
-              aria-hidden
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-semibold text-white"
-              style={{ backgroundColor: l.color }}
-            >
-              {l.who === "You" ? "You" : l.who.split(" ").map((w) => w[0]).join("")}
-            </span>
-            <div className="min-w-0 text-sm">
-              <div className="flex items-baseline gap-2">
-                <span className="font-semibold text-ink">{l.who}</span>
-                {l.tag && <span className="text-xs text-slate-500">{l.tag}</span>}
-              </div>
-              <p className={`mt-0.5 leading-snug text-slate-700 ${l.qa ? "rounded-md border-l-4 border-sky-400 bg-sky-50 px-2 py-1" : ""}`}>
-                {l.text}
-              </p>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </figure>
   );
 }
 
@@ -537,18 +432,5 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <span className="mb-1.5 block text-sm font-medium text-slate-700">{label}</span>
       {children}
     </label>
-  );
-}
-
-export function Logo({ dark = false }: { dark?: boolean }) {
-  return (
-    <div className="flex items-center gap-2">
-      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-700 font-display text-base font-bold text-white">
-        D<span className="text-clip">.</span>
-      </div>
-      <span className={`font-display text-lg font-semibold tracking-tight ${dark ? "text-white" : "text-ink"}`}>
-        Daftar
-      </span>
-    </div>
   );
 }
