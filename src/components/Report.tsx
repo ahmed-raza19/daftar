@@ -314,6 +314,24 @@ export default function ReportView({ session, onRestart, onBack }: Props) {
                     <Collapsible label="Show what you submitted">
                       <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700">{session.deliverable.trim() || "(empty)"}</p>
                     </Collapsible>
+                    {(session.files ?? []).length > 0 && (
+                      <div className="mt-4">
+                        <div className="text-xs font-semibold text-slate-500">Attached files</div>
+                        <ul className="mt-1.5 space-y-1 text-sm text-slate-700">
+                          {session.files!.map((f) => (
+                            <li key={f.id} className="flex items-center gap-2">
+                              <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] uppercase text-slate-600">
+                                {(f.name.split(".").pop() ?? "file").slice(0, 4)}
+                              </span>
+                              <span className="truncate">{f.name}</span>
+                              <span className="text-xs text-slate-400">
+                                {f.kind === "other" ? "not readable by the reviewer" : f.kind === "text" ? "read by the reviewer" : "viewed by the AI"}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <h3 className="font-semibold text-ink">Role fit</h3>

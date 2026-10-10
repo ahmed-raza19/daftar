@@ -113,6 +113,9 @@ export function sessionTranscript(session: Session): string {
     "",
     "DELIVERABLE",
     session.deliverable.trim() || "(not submitted yet)",
+    ...((session.files ?? []).length
+      ? ["", "ATTACHED FILES", ...(session.files ?? []).map((f) => `- ${f.name} (${f.type}, ${Math.round(f.size / 1024)} KB)`)]
+      : []),
   ];
 
   if (s.codeTask) {

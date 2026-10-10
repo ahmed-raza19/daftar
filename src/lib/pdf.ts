@@ -592,6 +592,12 @@ export function buildReportPdf(session: Session): jsPDF | null {
       y += (lines.length - 1) * 12;
     }
   };
+  if ((session.files ?? []).length) {
+    bullets(
+      "Attached files",
+      (session.files ?? []).map((f) => `${f.name} (${Math.round(f.size / 1024)} KB, ${f.kind === "other" ? "not readable by the reviewer" : f.kind === "text" ? "read by the reviewer" : "viewed by the AI"})`),
+    );
+  }
   bullets("What worked", r.deliverable.strengths);
   bullets("What to fix", r.deliverable.issues);
   const senior = doc.splitTextToSize(clean(r.deliverable.seniorVersion), W - 2 * M - 20);
