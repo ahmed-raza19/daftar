@@ -41,7 +41,7 @@ export default function Loading({ kind }: { kind: keyof typeof STEPS }) {
             <span className="relative inline-flex h-3 w-3 rounded-full bg-brand-600" />
           </span>
           <h1 className="text-lg font-semibold text-slate-900">
-            {kind === "generating" ? "Gemini is building your workplace" : "Your shift is being reviewed"}
+            {kind === "generating" ? "The AI is building your workplace" : "Your shift is being reviewed"}
           </h1>
         </div>
         <ol className="space-y-3">
