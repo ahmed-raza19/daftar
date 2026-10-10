@@ -53,6 +53,7 @@ Built at **AICON'26 Build With AI** (EdTech & Workforce) by **team nexora**.
 - **Hierarchy:** levels, reporting lines and `canApprove` lists are part of every persona. Asking a peer to approve a deadline gets redirected; messaging the CEO directly triggers your manager's reaction.
 - **Structured outputs:** every Gemini call returns JSON that matches a schema, and is validated/repaired in code (`src/lib/scenario.ts`, `src/app/api/chat/route.ts`).
 - **No model training.** We use a pre-trained model (Gemini) through its API. The AI work is persona design, prompt design, structured outputs and rubric-based grading.
+- **Measured:** the same strong shift graded 4 times scored 90–93; a weak shift scored 16–22. Details in [EVALUATION.md](EVALUATION.md).
 
 ## Responsible AI
 
