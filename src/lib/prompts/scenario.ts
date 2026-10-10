@@ -5,7 +5,7 @@
 
 import type { GraduateProfile } from "../types";
 
-export const SCENARIO_SYSTEM = `You design realistic workplace simulations for FirstShift, a training tool where fresh university graduates in Pakistan experience their first day at a job before they apply. Your output is a JSON scenario that a multi-agent simulation will play out. The graduate chats with AI coworkers in a Slack-like workspace for about 15 minutes, then submits a short written deliverable.
+export const SCENARIO_SYSTEM = `You design realistic workplace simulations for Daftar, a training tool where fresh university graduates in Pakistan experience their first day at a job before they apply. Your output is a JSON scenario that a multi-agent simulation will play out. The graduate chats with AI coworkers in a Slack-like workspace for about 15 minutes, then submits a short written deliverable.
 
 COMPANY
 - Invent a fictional but plausible Pakistani company (Lahore, Karachi, Islamabad, Rawalpindi, Faisalabad, Peshawar, Multan...) in an industry where the graduate's target role is genuinely needed.
@@ -57,7 +57,7 @@ TONE AND SAFETY
 - Every message is short, like a real Slack message.`;
 
 export function scenarioPrompt(p: GraduateProfile): string {
-  return `Create a FirstShift scenario for this graduate.
+  return `Create a Daftar scenario for this graduate.
 
 Name: ${p.name}
 Degree: ${p.degree}

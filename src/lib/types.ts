@@ -1,4 +1,4 @@
-// Shared data shapes for FirstShift.
+// Shared data shapes for Daftar.
 // A "scenario" is the fictional company + team + task that Gemini generates.
 // A "session" is one graduate playing through one scenario.
 

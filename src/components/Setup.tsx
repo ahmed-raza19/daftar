@@ -185,7 +185,7 @@ export default function Setup({ error, onStart, onSample, onLoad }: Props) {
         <section className="mx-auto grid max-w-6xl items-start gap-x-14 gap-y-8 px-4 pb-14 pt-6 sm:px-6 lg:grid-cols-[1fr_440px] lg:grid-rows-[auto_1fr] lg:pt-8">
           <div className="lg:col-start-1 lg:row-start-1 lg:pt-10">
             <h1 className="max-w-xl text-4xl font-bold leading-[1.05] text-ink sm:text-5xl">
-              Your first week on the job, before your first job.
+              Your first day at the office, before you&apos;re hired.
             </h1>
             <p className="mt-5 max-w-lg text-lg leading-relaxed text-slate-600">
               Work a real shift with an AI team at a fictional Pakistani company. Ask the right
@@ -512,7 +512,7 @@ function IdBadge({ name, company, role }: { name: string; company: string; role:
             <div className={`truncate text-sm ${role.trim() ? "text-slate-700" : "text-slate-400"}`}>{role.trim() || "The role you want"}</div>
           </div>
           <div className="flex flex-col items-end gap-1">
-            <span className="font-mono text-[10px] text-slate-500">FS-26-{num}</span>
+            <span className="font-mono text-[10px] text-slate-500">DF-26-{num}</span>
             <span
               aria-hidden
               className="h-4 w-16 opacity-70"
@@ -543,11 +543,11 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 export function Logo({ dark = false }: { dark?: boolean }) {
   return (
     <div className="flex items-center gap-2">
-      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-700 text-sm font-bold text-white">
-        F<span className="text-brand-200">S</span>
+      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-700 font-display text-base font-bold text-white">
+        D<span className="text-clip">.</span>
       </div>
       <span className={`font-display text-lg font-semibold tracking-tight ${dark ? "text-white" : "text-ink"}`}>
-        FirstShift
+        Daftar
       </span>
     </div>
   );

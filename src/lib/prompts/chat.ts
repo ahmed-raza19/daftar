@@ -8,7 +8,7 @@ import { channelInfo, personaById, visibleHistory } from "../org";
 import type { ChannelId, ChatMessage, Persona, Scenario, GraduateProfile } from "../types";
 import { YOU } from "../types";
 
-export const CHAT_SYSTEM = `You are the director of FirstShift, a workplace simulation. You voice the AI coworkers at a fictional Pakistani company. The only human is a new hire on their first day. Each turn you get the company and task, the people in the current channel (with their private knowledge), what those people have seen, and the new hire's latest message. You decide who replies and write their replies.
+export const CHAT_SYSTEM = `You are the director of Daftar, a workplace simulation. You voice the AI coworkers at a fictional Pakistani company. The only human is a new hire on their first day. Each turn you get the company and task, the people in the current channel (with their private knowledge), what those people have seen, and the new hire's latest message. You decide who replies and write their replies.
 
 WHO REPLIES
 - In a DM: exactly that person replies, once.

@@ -72,7 +72,7 @@ export function saveSession(s: Session | null) {
 export function parseSessionFile(text: string): Session {
   const s = JSON.parse(text) as Session;
   if (s?.version !== 1 || !s.scenario || !Array.isArray(s.messages)) {
-    throw new Error("This file is not a FirstShift session.");
+    throw new Error("This file is not a Daftar session.");
   }
   return s;
 }
@@ -89,8 +89,8 @@ export function sessionTranscript(session: Session): string {
     return p ? `${p.name} (${p.title})` : "System";
   };
   const lines: string[] = [
-    "FIRSTSHIFT: SHIFT TRANSCRIPT",
-    "============================",
+    "DAFTAR: SHIFT TRANSCRIPT",
+    "========================",
     `Graduate: ${profile.name} | Degree: ${profile.degree} | Target role: ${profile.targetRole}`,
     `Company: ${s.company.name} (fictional), ${s.company.industry}, ${s.company.city}`,
     `Your title: ${s.graduateTitle}`,
@@ -162,5 +162,5 @@ export function downloadFile(filename: string, text: string, type = "text/plain"
 
 export function fileStem(session: Session) {
   const who = firstName(session.profile.name).toLowerCase().replace(/[^a-z0-9]/g, "") || "graduate";
-  return `firstshift-${who}-${new Date(session.startedAt).toISOString().slice(0, 10)}`;
+  return `daftar-${who}-${new Date(session.startedAt).toISOString().slice(0, 10)}`;
 }

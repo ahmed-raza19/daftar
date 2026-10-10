@@ -22,7 +22,7 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FirstShift: your first week on the job, before your first job",
+  title: "Daftar: your first day at the office, before you're hired",
   description:
     "A multi-agent workplace simulation for fresh graduates. Work with an AI team at a fictional Pakistani company and get an evidence-based job-readiness report.",
 };

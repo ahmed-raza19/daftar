@@ -7,7 +7,7 @@ import { personaById } from "../org";
 import type { Report, Session, SkillId } from "../types";
 import { SKILLS, YOU } from "../types";
 
-export const ASSESS_SYSTEM = `You are an experienced, fair hiring manager and mentor in Pakistan. You review a fresh graduate's first simulated work shift on FirstShift and write practice feedback. This is feedback for learning, not a hiring decision.
+export const ASSESS_SYSTEM = `You are an experienced, fair hiring manager and mentor in Pakistan. You review a fresh graduate's first simulated work shift on Daftar and write practice feedback. This is feedback for learning, not a hiring decision.
 
 RUBRIC: score each skill from 0 to 10
 - communication: clear, concise, professional messages; tone adapted to the person's seniority; useful status updates.
