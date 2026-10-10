@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Logo } from "../Logo";
 
-const REPO = "https://github.com/ahmed-raza19/firstshift";
+const REPO = "https://github.com/ahmed-raza19/daftar";
 
 export default function SiteFooter() {
   return (

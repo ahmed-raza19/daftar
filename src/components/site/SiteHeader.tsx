@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "../Logo";
 
-export const REPO = "https://github.com/ahmed-raza19/firstshift";
+export const REPO = "https://github.com/ahmed-raza19/daftar";
 
 const NAV = [
   { href: "/how-it-works", label: "How it works" },

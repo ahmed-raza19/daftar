@@ -94,7 +94,7 @@ export default function Evaluation() {
             <p className="mt-4 text-sm leading-relaxed text-slate-600">
               Built during AICON&apos;26 by team nexora, starting from the standard Next.js template, with help from an AI coding
               assistant (Claude Code). Full disclosures are in the{" "}
-              <a href="https://github.com/ahmed-raza19/firstshift#disclosure" className="font-medium text-brand-800 underline" target="_blank" rel="noreferrer">
+              <a href="https://github.com/ahmed-raza19/daftar#disclosure" className="font-medium text-brand-800 underline" target="_blank" rel="noreferrer">
                 README
               </a>
               .
