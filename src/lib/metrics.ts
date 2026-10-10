@@ -89,11 +89,18 @@ export function shiftSignals(session: Session): Signal[] {
     source: "measured",
   });
 
-  // Curveballs: did you respond after each one?
+  // Curveballs: did you respond after each one? Replying where it was said, to the
+  // sender, or acknowledging it to your team / manager all count (nobody replies to
+  // a company-wide announcement in #general).
+  const mgrId = s.managerId;
   const curveballs = session.messages.filter((m) => m.kind === "curveball");
   if (curveballs.length > 0) {
     const answered = curveballs.filter((c) =>
-      mine.some((m) => m.at > c.at && (m.channel === c.channel || m.channel === `dm:${c.from}`)),
+      mine.some(
+        (m) =>
+          m.at > c.at &&
+          [c.channel, `dm:${c.from}`, "team", `dm:${mgrId}`].includes(m.channel),
+      ),
     ).length;
     signals.push({
       id: "curveballs",
