@@ -5,6 +5,7 @@
 
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import { shiftAnalytics } from "./analytics";
 import { overallStars, shiftSignals } from "./metrics";
 import { fileStem } from "./session";
 import type { Session } from "./types";
@@ -72,6 +73,230 @@ function drawStars(doc: jsPDF, value: number, x: number, y: number, size: number
       polygon(doc, fill >= 1 ? pts : clipLeft(pts, cx - size / 2 + size * fill));
     }
   }
+}
+
+// ---- Shift analytics (dashboard charts) ----
+
+/** Draws the analytics section starting at y; returns the new y. */
+function drawAnalytics(doc: jsPDF, session: Session, y: number): number {
+  const a = shiftAnalytics(session);
+  const r = session.report!;
+  const W = doc.internal.pageSize.getWidth();
+  const innerW = W - 2 * M;
+
+  // KPI boxes
+  const lastRun = a.testRuns.at(-1);
+  const consulted = a.people.filter((p) => p.count > 0).length;
+  const kpis: [string, string, string][] = [
+    ["Overall score", `${r.overall}`, r.verdict],
+    ["Time on shift", `${a.durationMin} min`, `${a.activity.at(-1)?.total ?? 0} messages sent`],
+    ["Hidden info found", `${a.intel.found}/${a.intel.total}`, `${Math.round((a.intel.found / Math.max(1, a.intel.total)) * 100)}% uncovered`],
+    lastRun
+      ? ["Hidden tests", `${lastRun.passed}/${lastRun.total}`, `${a.testRuns.length} test runs`]
+      : ["People consulted", `${consulted}/${a.people.length}`, "messaged or @mentioned"],
+  ];
+  const gap = 10;
+  const boxW = (innerW - gap * 3) / 4;
+  kpis.forEach(([label, value, sub], i) => {
+    const x = M + i * (boxW + gap);
+    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(...TRACK);
+    doc.setLineWidth(0.6);
+    doc.roundedRect(x, y, boxW, 56, 6, 6, "FD");
+    doc.setFillColor(...BRAND);
+    doc.circle(x + 14, y + 16, 3, "F");
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(...MUTED);
+    doc.text(label, x + 22, y + 18);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(...INK);
+    doc.text(clean(value), x + 10, y + 38);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...MUTED);
+    doc.text(clean(sub), x + 10, y + 49);
+  });
+  y += 72;
+
+  // Activity area chart (left) + donut (right)
+  const chartW = innerW - 170;
+  const chartH = 150;
+  const cx0 = M;
+  const cy0 = y;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(...INK);
+  doc.text("Your shift, minute by minute", cx0, cy0 + 4);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.setTextColor(...MUTED);
+  doc.text("Messages sent so far. Dashed lines mark the surprises.", cx0, cy0 + 15);
+
+  const P = { l: 22, r: 8, t: 30, b: 18 };
+  const pts = a.activity;
+  const maxY = Math.max(2, pts.at(-1)!.total);
+  const maxX = Math.max(pts.at(-1)!.minute, 1);
+  const px = (m: number) => cx0 + P.l + (m / maxX) * (chartW - P.l - P.r);
+  const py = (v: number) => cy0 + chartH - P.b - (v / maxY) * (chartH - P.t - P.b);
+
+  // grid + y labels
+  doc.setDrawColor(...TRACK);
+  doc.setLineWidth(0.5);
+  for (const t of Array.from(new Set([0, Math.ceil(maxY / 2), maxY]))) {
+    doc.line(cx0 + P.l, py(t), cx0 + chartW - P.r, py(t));
+    doc.setFontSize(7);
+    doc.setTextColor(...MUTED);
+    doc.text(String(t), cx0 + P.l - 5, py(t) + 2.5, { align: "right" });
+  }
+  // x labels
+  pts.forEach((p, i) => {
+    if (i % Math.ceil(pts.length / 6) === 0 || i === pts.length - 1) {
+      doc.text(`${p.minute}m`, px(p.minute), cy0 + chartH - 6, { align: "center" });
+    }
+  });
+  // area fill
+  const poly: [number, number][] = [
+    [px(0), py(0)],
+    ...pts.map((p) => [px(p.minute), py(p.total)] as [number, number]),
+    [px(pts.at(-1)!.minute), py(0)],
+  ];
+  doc.setFillColor(214, 234, 224);
+  polygon(doc, poly);
+  // line
+  doc.setDrawColor(...BRAND);
+  doc.setLineWidth(1.6);
+  for (let i = 1; i < pts.length; i++) {
+    doc.line(px(pts[i - 1].minute), py(pts[i - 1].total), px(pts[i].minute), py(pts[i].total));
+  }
+  // end point + label
+  const last = pts.at(-1)!;
+  doc.setFillColor(...BRAND);
+  doc.circle(px(last.minute), py(last.total), 2.8, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7.5);
+  doc.setTextColor(...INK);
+  doc.text(`${last.total} messages`, px(last.minute) - 4, py(last.total) - 6, { align: "right" });
+  // surprise markers
+  doc.setLineDashPattern([2.5, 2.5], 0);
+  doc.setDrawColor(...INK);
+  doc.setLineWidth(0.5);
+  a.markers.forEach((m, i) => {
+    const mx = px(Math.min(m.minute, maxX));
+    doc.line(mx, cy0 + P.t - 4, mx, cy0 + chartH - P.b);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.5);
+    doc.setTextColor(...INK);
+    doc.text(m.label, mx + 2, cy0 + P.t - 6 + (i % 2) * 8);
+  });
+  doc.setLineDashPattern([], 0);
+
+  // donut
+  const dcx = M + innerW - 70;
+  const dcy = cy0 + 80;
+  const dr = 40;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(...INK);
+  doc.text("Hidden information", dcx, cy0 + 4, { align: "center" });
+  doc.setDrawColor(...TRACK);
+  doc.setLineWidth(11);
+  doc.circle(dcx, dcy, dr, "S");
+  const share = a.intel.total ? a.intel.found / a.intel.total : 0;
+  if (share > 0) {
+    doc.setDrawColor(...BRAND);
+    doc.setLineCap("round");
+    const steps = Math.max(2, Math.round(share * 240));
+    for (let i = 0; i < steps; i++) {
+      const a0 = -Math.PI / 2 + (i / steps) * share * 2 * Math.PI;
+      const a1 = -Math.PI / 2 + ((i + 1) / steps) * share * 2 * Math.PI;
+      doc.line(dcx + dr * Math.cos(a0), dcy + dr * Math.sin(a0), dcx + dr * Math.cos(a1), dcy + dr * Math.sin(a1));
+    }
+  }
+  doc.setLineCap("butt");
+  doc.setLineWidth(0.5);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(18);
+  doc.setTextColor(...INK);
+  doc.text(`${a.intel.found}/${a.intel.total}`, dcx, dcy + 4, { align: "center" });
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.setTextColor(...MUTED);
+  doc.text("found", dcx, dcy + 15, { align: "center" });
+  doc.text(`Found ${a.intel.found}   Missed ${a.intel.total - a.intel.found}`, dcx, dcy + dr + 20, { align: "center" });
+
+  y = cy0 + chartH + 18;
+
+  // Who you talked to
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(...INK);
+  doc.text("Who you talked to", M, y);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.setTextColor(...MUTED);
+  doc.text("Direct messages, #client replies and @mentions per teammate", M, y + 11);
+  y += 22;
+  const maxCount = Math.max(1, ...a.people.map((p) => p.count));
+  const barX = M + 170;
+  const barW = innerW - 170 - 30;
+  for (const p of a.people) {
+    y += 15;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.setTextColor(...INK);
+    doc.text(clean(p.name), M, y);
+    doc.setFillColor(...TRACK);
+    doc.rect(barX, y - 7, barW, 7, "F");
+    if (p.count > 0) {
+      doc.setFillColor(...BRAND);
+      doc.rect(barX, y - 7, (barW * p.count) / maxCount, 7, "F");
+    }
+    doc.setFont("helvetica", p.count ? "bold" : "normal");
+    doc.setTextColor(...(p.count ? INK : MUTED));
+    doc.text(String(p.count), barX + barW + 22, y, { align: "right" });
+  }
+  y += 10;
+
+  // Code Shift: passing tests per run
+  if (a.testRuns.length > 0) {
+    y += 16;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(...INK);
+    doc.text("Hidden tests per run (run in the browser by the app)", M, y);
+    const tH = 90;
+    const tY = y + 10;
+    const total = Math.max(...a.testRuns.map((t) => t.total));
+    const tx = (i: number) =>
+      a.testRuns.length === 1 ? M + innerW / 2 : M + 30 + (i / (a.testRuns.length - 1)) * (innerW - 60);
+    const ty = (v: number) => tY + tH - 16 - (v / total) * (tH - 30);
+    doc.setDrawColor(...TRACK);
+    doc.setLineWidth(0.5);
+    doc.line(M + 20, ty(0), M + innerW - 10, ty(0));
+    doc.line(M + 20, ty(total), M + innerW - 10, ty(total));
+    doc.setDrawColor(...BRAND);
+    doc.setLineWidth(1.6);
+    for (let i = 1; i < a.testRuns.length; i++) {
+      doc.line(tx(i - 1), ty(a.testRuns[i - 1].passed), tx(i), ty(a.testRuns[i].passed));
+    }
+    a.testRuns.forEach((t, i) => {
+      doc.setFillColor(...(t.passed === t.total ? BRAND : ([255, 255, 255] as RGB)));
+      doc.setDrawColor(...BRAND);
+      doc.setLineWidth(1.2);
+      doc.circle(tx(i), ty(t.passed), 3, "FD");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      doc.setTextColor(...INK);
+      doc.text(`${t.passed}/${t.total}`, tx(i), ty(t.passed) - 7, { align: "center" });
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...MUTED);
+      doc.text(`Run ${t.run}`, tx(i), tY + tH - 2, { align: "center" });
+    });
+    y = tY + tH;
+  }
+  return y;
 }
 
 export async function downloadReportPdf(session: Session) {
@@ -223,6 +448,10 @@ export function buildReportPdf(session: Session): jsPDF | null {
     }
   }
   y += 8;
+
+  // ---- Shift analytics (charts) ----
+  heading("Shift analytics", 420);
+  y = drawAnalytics(doc, session, y + 10);
 
   // ---- Evidence ----
   heading("Evidence and feedback", 130);
