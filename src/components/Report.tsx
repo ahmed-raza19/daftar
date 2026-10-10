@@ -41,7 +41,7 @@ export default function ReportView({ session, onRestart, onBack }: Props) {
             <button
               type="button"
               onClick={onRestart}
-              className="rounded-lg bg-teal-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-teal-800"
+              className="rounded-lg bg-brand-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-800"
             >
               New shift
             </button>
@@ -53,7 +53,7 @@ export default function ReportView({ session, onRestart, onBack }: Props) {
         {/* Hero */}
         <section className="grid gap-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 md:grid-cols-[1fr_auto]">
           <div>
-            <div className="text-xs font-semibold uppercase tracking-wide text-teal-700">Job-readiness report</div>
+            <div className="text-xs font-semibold text-brand-700">Job-readiness report</div>
             <h1 className="mt-1 text-2xl font-semibold text-slate-900 sm:text-3xl">{session.profile.name}</h1>
             <p className="mt-1 text-sm text-slate-500">
               {s.graduateTitle} at {s.company.name} (fictional) · {session.profile.degree}
@@ -70,7 +70,7 @@ export default function ReportView({ session, onRestart, onBack }: Props) {
               <span className="text-6xl font-semibold tabular-nums tracking-tight text-slate-900">{r.overall}</span>
               <span className="text-lg text-slate-400">/100</span>
             </div>
-            <span className="mt-1 rounded-full bg-teal-50 px-3 py-1 text-sm font-semibold text-teal-800 ring-1 ring-teal-200">
+            <span className="mt-1 rounded-full bg-brand-50 px-3 py-1 text-sm font-semibold text-brand-800 ring-1 ring-brand-200">
               {r.verdict}
             </span>
             <p className="mt-3 max-w-[220px] text-[11px] leading-snug text-slate-400 md:text-right">
@@ -98,7 +98,7 @@ export default function ReportView({ session, onRestart, onBack }: Props) {
                   <li key={f.id} className="rounded-xl border border-slate-200 p-3">
                     <div className="flex items-start gap-2 text-xs">
                       <span
-                        className={`shrink-0 whitespace-nowrap rounded px-1.5 py-0.5 font-semibold ${found ? "bg-teal-50 text-teal-800" : "bg-slate-100 text-slate-600"}`}
+                        className={`shrink-0 whitespace-nowrap rounded px-1.5 py-0.5 font-semibold ${found ? "bg-brand-50 text-brand-800" : "bg-slate-100 text-slate-600"}`}
                       >
                         {found ? "✓ Found" : "✗ Missed"}
                       </span>
@@ -127,7 +127,7 @@ export default function ReportView({ session, onRestart, onBack }: Props) {
               <ListBlock title="What worked" items={r.deliverable.strengths} mark="+" />
               <ListBlock title="What to fix" items={r.deliverable.issues} mark="–" />
               <div className="mt-4 rounded-xl bg-slate-50 p-4">
-                <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">What a senior would have submitted</div>
+                <div className="text-xs font-semibold text-slate-500">What a senior would have submitted</div>
                 <p className="mt-1.5 text-sm leading-relaxed text-slate-700">{r.deliverable.seniorVersion}</p>
               </div>
               <Collapsible label="Show what you submitted">
@@ -162,7 +162,7 @@ export default function ReportView({ session, onRestart, onBack }: Props) {
               <li key={i} className="rounded-xl border border-slate-200 p-4">
                 <div
                   className={`mb-2 inline-flex rounded px-1.5 py-0.5 text-xs font-semibold ${
-                    m.type === "strength" ? "bg-teal-50 text-teal-800" : "bg-amber-50 text-amber-800"
+                    m.type === "strength" ? "bg-brand-50 text-brand-800" : "bg-amber-50 text-amber-800"
                   }`}
                 >
                   {m.type === "strength" ? "▲ Strength" : "▼ Concern"}
@@ -179,7 +179,7 @@ export default function ReportView({ session, onRestart, onBack }: Props) {
           <ol className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
             {r.plan.map((w) => (
               <li key={w.week} className="rounded-xl border border-slate-200 p-4">
-                <div className="text-xs font-semibold uppercase tracking-wide text-teal-700">Week {w.week}</div>
+                <div className="text-xs font-semibold text-brand-700">Week {w.week}</div>
                 <div className="mt-1 font-medium text-slate-900">{w.focus}</div>
                 <ul className="mt-2 space-y-1.5 text-sm text-slate-600">
                   {w.actions.map((a, i) => (
@@ -267,7 +267,7 @@ function CodeResults({ session }: { session: Session }) {
           <ul className="mt-4 grid gap-2 md:grid-cols-2">
             {last.results.map((r) => (
               <li key={r.name} className="rounded-lg border border-slate-200 px-3 py-2 text-sm">
-                <span className={`mr-2 text-xs font-bold ${r.passed ? "text-teal-700" : "text-red-700"}`}>
+                <span className={`mr-2 text-xs font-bold ${r.passed ? "text-brand-700" : "text-red-700"}`}>
                   {r.passed ? "✓ PASS" : "✗ FAIL"}
                 </span>
                 <span className="text-slate-800">{r.name}</span>
@@ -292,7 +292,7 @@ function Bar({ value, max }: { value: number; max: number }) {
   const pct = Math.max(0, Math.min(100, (value / max) * 100));
   return (
     <div className="mt-1.5 h-2.5 w-full rounded-r-[4px] bg-slate-100" role="img" aria-label={`${value} out of ${max}`}>
-      <div className="h-full rounded-r-[4px] bg-teal-700 transition-all duration-700" style={{ width: `${pct}%` }} />
+      <div className="h-full rounded-r-[4px] bg-brand-700 transition-all duration-700" style={{ width: `${pct}%` }} />
     </div>
   );
 }
@@ -320,7 +320,7 @@ function ListBlock({ title, items, mark }: { title: string; items: string[]; mar
   if (!items.length) return null;
   return (
     <div className="mt-3">
-      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{title}</div>
+      <div className="text-xs font-semibold text-slate-500">{title}</div>
       <ul className="mt-1.5 space-y-1.5 text-sm text-slate-700">
         {items.map((x, i) => (
           <li key={i} className="flex gap-2">
@@ -337,7 +337,7 @@ function Collapsible({ label, children }: { label: string; children: React.React
   const [open, setOpen] = useState(false);
   return (
     <div className="mt-3">
-      <button type="button" onClick={() => setOpen((o) => !o)} className="text-sm font-medium text-teal-800 hover:underline">
+      <button type="button" onClick={() => setOpen((o) => !o)} className="text-sm font-medium text-brand-800 hover:underline">
         {open ? "Hide" : label}
       </button>
       {open && <div className="mt-2 rounded-xl border border-slate-200 p-3">{children}</div>}

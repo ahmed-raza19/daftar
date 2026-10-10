@@ -76,12 +76,12 @@ export default function Setup({ error, onStart, onSample, onLoad }: Props) {
 
       <div className="mx-auto grid max-w-6xl gap-10 px-4 pb-16 pt-4 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:gap-14 lg:pt-10">
         <section>
-          <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-teal-50 px-3 py-1 text-xs font-medium text-teal-800 ring-1 ring-teal-200">
+          <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-800 ring-1 ring-brand-200">
             Multi-agent workplace simulation for fresh graduates
           </p>
           <h1 className="text-4xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-5xl">
             Your first week on the job,{" "}
-            <span className="text-teal-700">before your first job.</span>
+            <span className="text-brand-700">before your first job.</span>
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-slate-600">
             Join an AI team at a fictional Pakistani company. Everyone has their own role,
@@ -174,7 +174,7 @@ export default function Setup({ error, onStart, onSample, onLoad }: Props) {
             <button
               type="submit"
               disabled={!canStart}
-              className="mt-6 w-full rounded-lg bg-teal-700 px-4 py-3 font-semibold text-white transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+              className="mt-6 w-full rounded-lg bg-brand-700 px-4 py-3 font-semibold text-white transition hover:bg-brand-800 disabled:cursor-not-allowed disabled:bg-slate-300"
             >
               Start my first shift
             </button>
@@ -183,10 +183,10 @@ export default function Setup({ error, onStart, onSample, onLoad }: Props) {
               <button
                 type="button"
                 onClick={() => onSample(profile(), "code")}
-                className="w-full rounded-lg border border-teal-300 bg-teal-50 px-4 py-2.5 text-left text-sm font-medium text-teal-900 transition hover:bg-teal-100"
+                className="w-full rounded-lg border border-brand-300 bg-brand-50 px-4 py-2.5 text-left text-sm font-medium text-brand-900 transition hover:bg-brand-100"
               >
                 <span className="block">Code Shift: AI/ML Engineer at Rabta</span>
-                <span className="block text-xs font-normal text-teal-800/80">
+                <span className="block text-xs font-normal text-brand-800/80">
                   Write Python with an 8-person AI team. Hidden tests really run in your browser.
                 </span>
               </button>
@@ -233,7 +233,7 @@ export default function Setup({ error, onStart, onSample, onLoad }: Props) {
 }
 
 const inputCls =
-  "w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-[15px] text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20";
+  "w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-[15px] text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -247,8 +247,8 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 export function Logo({ dark = false }: { dark?: boolean }) {
   return (
     <div className="flex items-center gap-2">
-      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-700 text-sm font-bold text-white">
-        F<span className="text-teal-200">S</span>
+      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-700 text-sm font-bold text-white">
+        F<span className="text-brand-200">S</span>
       </div>
       <span className={`text-lg font-semibold tracking-tight ${dark ? "text-white" : "text-slate-900"}`}>
         FirstShift

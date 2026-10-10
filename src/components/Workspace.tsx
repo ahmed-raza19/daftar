@@ -305,7 +305,7 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
           <span className="truncate font-medium text-white">{s.company.name}</span>
           <span className="truncate text-slate-400">· {s.graduateTitle} · Day 1</span>
           {session.source === "sample" && (
-            <span className="rounded bg-slate-700 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-slate-300">sample</span>
+            <span className="rounded bg-slate-700 px-1.5 py-0.5 text-[10px] text-slate-300">sample</span>
           )}
         </div>
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
@@ -332,7 +332,7 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
           <button
             type="button"
             onClick={submit}
-            className="rounded-md bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-teal-500"
+            className="rounded-md bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-500"
           >
             Submit work
           </button>
@@ -346,7 +346,7 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
             key={p}
             type="button"
             onClick={() => setPane(p)}
-            className={`py-2 font-medium ${pane === p ? "border-b-2 border-teal-700 text-teal-800" : "text-slate-500"}`}
+            className={`py-2 font-medium ${pane === p ? "border-b-2 border-brand-700 text-brand-800" : "text-slate-500"}`}
           >
             {p === "channels" ? "Team" : p === "chat" ? "Chat" : "Task"}
           </button>
@@ -405,13 +405,13 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
           <div className="mt-auto border-t border-slate-700 p-4">
             <div className="mb-1.5 flex items-center justify-between text-xs">
               <span className="font-medium text-slate-200">Team intel discovered</span>
-              <span className="font-mono tabular-nums text-teal-300">
+              <span className="font-mono tabular-nums text-brand-300">
                 {found.length}/{totalFacts}
               </span>
             </div>
             <div className="h-1.5 overflow-hidden rounded-full bg-slate-700">
               <div
-                className="h-full rounded-full bg-teal-400 transition-all duration-700"
+                className="h-full rounded-full bg-brand-400 transition-all duration-700"
                 style={{ width: `${totalFacts ? (found.length / totalFacts) * 100 : 0}%` }}
               />
             </div>
@@ -505,7 +505,7 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
                         setDraft((d) => `${d}${d && !d.endsWith(" ") ? " " : ""}@${firstName(p.name)} `);
                         inputRef.current?.focus();
                       }}
-                      className="rounded-full border border-slate-200 px-2 py-0.5 text-xs text-slate-600 hover:border-teal-300 hover:bg-teal-50 hover:text-teal-800"
+                      className="rounded-full border border-slate-200 px-2 py-0.5 text-xs text-slate-600 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
                     >
                       @{firstName(p.name)}
                     </button>
@@ -513,7 +513,7 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
                 })}
               </div>
             )}
-            <div className="flex items-end gap-2 rounded-xl border border-slate-300 bg-white p-1.5 focus-within:border-teal-600 focus-within:ring-2 focus-within:ring-teal-600/20">
+            <div className="flex items-end gap-2 rounded-xl border border-slate-300 bg-white p-1.5 focus-within:border-brand-600 focus-within:ring-2 focus-within:ring-brand-600/20">
               <textarea
                 ref={inputRef}
                 rows={1}
@@ -532,14 +532,14 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
                 type="button"
                 onClick={send}
                 disabled={!draft.trim()}
-                className="rounded-lg bg-teal-700 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-teal-800 disabled:bg-slate-300"
+                className="rounded-lg bg-brand-700 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-brand-800 disabled:bg-slate-300"
               >
                 Send
               </button>
             </div>
             <p className="mt-1.5 text-[11px] text-slate-400">
               Enter to send · Shift+Enter for a new line
-              {sending && <span className="ml-2 text-teal-700">· teammates are replying…</span>}
+              {sending && <span className="ml-2 text-brand-700">· teammates are replying…</span>}
             </p>
           </div>
         </section>
@@ -564,7 +564,7 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
                 key={id}
                 type="button"
                 onClick={() => setTab(id)}
-                className={`px-1 py-2.5 ${tab === id ? "border-b-2 border-teal-700 text-teal-800" : "text-slate-500 hover:text-slate-800"}`}
+                className={`px-1 py-2.5 ${tab === id ? "border-b-2 border-brand-700 text-brand-800" : "text-slate-500 hover:text-slate-800"}`}
               >
                 {label}
               </button>
@@ -577,7 +577,7 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
             {tab === "task" && (
               <div className="space-y-4">
                 <div className="rounded-xl border border-slate-200 bg-white p-4">
-                  <div className="text-[11px] font-semibold uppercase tracking-wide text-teal-700">Your task</div>
+                  <div className="text-[11px] font-semibold text-brand-700">Your task</div>
                   <h2 className="mt-1 font-semibold text-slate-900">{s.task.title}</h2>
                   <p className="mt-2 text-sm leading-relaxed text-slate-700">{s.task.brief}</p>
                   <dl className="mt-3 space-y-2 text-sm">
@@ -598,14 +598,14 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
                 </div>
                 {s.attachments.length > 0 && (
                   <div className="space-y-3">
-                    <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Files</div>
+                    <div className="text-[11px] font-semibold text-slate-500">Files</div>
                     {s.attachments.map((a) => (
                       <AttachmentView key={a.id} a={a} />
                     ))}
                   </div>
                 )}
                 <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm">
-                  <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">About the company</div>
+                  <div className="text-[11px] font-semibold text-slate-500">About the company</div>
                   <p className="mt-1 leading-relaxed text-slate-700">{s.company.about}</p>
                 </div>
               </div>
@@ -619,7 +619,7 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
                   Important things your teammates told you. Each person holds information that isn&apos;t written anywhere.
                 </p>
                 {found.map((f) => (
-                  <div key={f.id} className="rounded-xl border border-teal-200 bg-white p-3">
+                  <div key={f.id} className="rounded-xl border border-brand-200 bg-white p-3">
                     <div className="mb-1 flex items-center gap-2 text-xs text-slate-500">
                       <Avatar scenario={s} id={f.holder.id} size={18} /> from {f.holder.name}
                     </div>
@@ -653,7 +653,7 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
                     update((x) => ({ ...x, deliverable: v }));
                   }}
                   placeholder="Write your work here. It's saved automatically."
-                  className="mt-3 min-h-64 flex-1 resize-none rounded-xl border border-slate-300 bg-white p-3 text-[15px] leading-relaxed text-slate-900 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20"
+                  className="mt-3 min-h-64 flex-1 resize-none rounded-xl border border-slate-300 bg-white p-3 text-[15px] leading-relaxed text-slate-900 outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20"
                 />
                 <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
                   <span>{countWords(session.deliverable)} words</span>
@@ -666,7 +666,7 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
                   type="button"
                   onClick={submit}
                   disabled={sending || submitting}
-                  className="mt-3 rounded-lg bg-teal-700 px-4 py-2.5 font-semibold text-white transition hover:bg-teal-800 disabled:bg-slate-300"
+                  className="mt-3 rounded-lg bg-brand-700 px-4 py-2.5 font-semibold text-white transition hover:bg-brand-800 disabled:bg-slate-300"
                 >
                   {submitting ? "Running final tests…" : "Submit and end my shift"}
                 </button>
@@ -718,12 +718,12 @@ function MessageRow({ m, session, youName }: { m: ChatMessage; session: Session;
           </span>
         </div>
         <div className={`mt-0.5 ${box}`}>
-          {m.kind === "curveball" && <div className="mb-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-700">⚡ Update</div>}
+          {m.kind === "curveball" && <div className="mb-0.5 text-[11px] font-semibold text-amber-700">⚡ Update</div>}
           {m.kind === "qa" && (
-            <div className="mb-0.5 text-[11px] font-semibold uppercase tracking-wide text-sky-700">🧪 QA report from real test results</div>
+            <div className="mb-0.5 text-[11px] font-semibold text-sky-700">🧪 QA report from real test results</div>
           )}
           {m.kind === "orgEvent" && (
-            <div className="mb-0.5 text-[11px] font-semibold uppercase tracking-wide text-violet-700">👀 Your manager noticed</div>
+            <div className="mb-0.5 text-[11px] font-semibold text-violet-700">👀 Your manager noticed</div>
           )}
           <p className="whitespace-pre-wrap break-words text-[15px] leading-relaxed text-slate-800">{withMentions(m.text)}</p>
         </div>
@@ -735,7 +735,7 @@ function MessageRow({ m, session, youName }: { m: ChatMessage; session: Session;
 function withMentions(text: string) {
   return text.split(/(@[A-Za-z][\w.]*)/g).map((part, i) =>
     part.startsWith("@") ? (
-      <span key={i} className="rounded bg-teal-50 px-0.5 font-medium text-teal-800">
+      <span key={i} className="rounded bg-brand-50 px-0.5 font-medium text-brand-800">
         {part}
       </span>
     ) : (
@@ -747,7 +747,7 @@ function withMentions(text: string) {
 function SidebarSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="px-2 pt-4">
-      <div className="mb-1 px-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">{title}</div>
+      <div className="mb-1 px-2 text-[11px] font-semibold text-slate-500">{title}</div>
       <ul className="space-y-0.5">{children}</ul>
     </div>
   );
@@ -773,7 +773,7 @@ function SidebarItem({
         type="button"
         onClick={onClick}
         className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition ${
-          active ? "bg-teal-700 text-white" : hasUnread ? "font-semibold text-white hover:bg-slate-700" : "hover:bg-slate-700"
+          active ? "bg-brand-700 text-white" : hasUnread ? "font-semibold text-white hover:bg-slate-700" : "hover:bg-slate-700"
         }`}
       >
         {children}

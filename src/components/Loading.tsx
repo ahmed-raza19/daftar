@@ -37,8 +37,8 @@ export default function Loading({ kind }: { kind: keyof typeof STEPS }) {
       <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
         <div className="mb-6 flex items-center gap-3">
           <span className="relative flex h-3 w-3">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal-400 opacity-75" />
-            <span className="relative inline-flex h-3 w-3 rounded-full bg-teal-600" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-400 opacity-75" />
+            <span className="relative inline-flex h-3 w-3 rounded-full bg-brand-600" />
           </span>
           <h1 className="text-lg font-semibold text-slate-900">
             {kind === "generating" ? "Gemini is building your workplace" : "Your shift is being reviewed"}
@@ -52,7 +52,7 @@ export default function Loading({ kind }: { kind: keyof typeof STEPS }) {
             >
               <span
                 className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
-                  n < i ? "bg-teal-600 text-white" : n === i ? "bg-teal-100 text-teal-800" : "bg-slate-100 text-slate-400"
+                  n < i ? "bg-brand-600 text-white" : n === i ? "bg-brand-100 text-brand-800" : "bg-slate-100 text-slate-400"
                 }`}
               >
                 {n < i ? "✓" : n + 1}

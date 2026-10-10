@@ -17,7 +17,7 @@ export default function OrgChart({ scenario, youName, onOpenDm }: Props) {
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <h3 className="mb-2 text-xs font-semibold text-slate-500">
           {scenario.company.name}
         </h3>
         <ul className="space-y-1">
@@ -28,7 +28,7 @@ export default function OrgChart({ scenario, youName, onOpenDm }: Props) {
       </div>
       {externals.length > 0 && (
         <div>
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Outside the company</h3>
+          <h3 className="mb-2 text-xs font-semibold text-slate-500">Outside the company</h3>
           <ul className="space-y-1">
             {externals.map((p) => (
               <Node key={p.id} node={{ id: p.id, children: [] }} depth={0} {...{ scenario, youName, onOpenDm }} />
@@ -50,7 +50,7 @@ function Node({ node, depth, scenario, youName, onOpenDm }: Props & { node: OrgN
   const body = (
     <div
       className={`flex items-center gap-2.5 rounded-lg border px-2.5 py-2 text-left ${
-        isYou ? "border-teal-300 bg-teal-50" : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+        isYou ? "border-brand-300 bg-brand-50" : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
       }`}
     >
       <Avatar scenario={scenario} id={node.id} youName={youName} size={30} status />

@@ -25,7 +25,7 @@ export default function AttachmentView({ a }: { a: Attachment }) {
   return (
     <figure className="overflow-hidden rounded-lg border border-slate-200 bg-white">
       <figcaption className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700">
-        <span className="rounded bg-slate-200 px-1.5 py-0.5 font-mono text-[10px] uppercase text-slate-600">
+        <span className="rounded bg-slate-200 px-1.5 py-0.5 font-mono text-[10px] text-slate-600">
           {a.kind === "table" ? "csv" : a.kind}
         </span>
         <span className="truncate font-mono">{a.name}</span>

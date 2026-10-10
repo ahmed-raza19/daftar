@@ -42,9 +42,9 @@ export default function CodePanel({ session, update, onRun }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="overflow-hidden rounded-xl border border-slate-300 bg-white focus-within:border-teal-600 focus-within:ring-2 focus-within:ring-teal-600/20">
+      <div className="overflow-hidden rounded-xl border border-slate-300 bg-white focus-within:border-brand-600 focus-within:ring-2 focus-within:ring-brand-600/20">
         <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-3 py-1.5 text-xs">
-          <span className="rounded bg-slate-200 px-1.5 py-0.5 font-mono text-[10px] uppercase text-slate-600">py</span>
+          <span className="rounded bg-slate-200 px-1.5 py-0.5 font-mono text-[10px] text-slate-600">py</span>
           <span className="font-mono text-slate-700">{task.fileName}</span>
           <button
             type="button"
@@ -88,7 +88,7 @@ export default function CodePanel({ session, update, onRun }: Props) {
           {running ? (pythonIsWarm() ? "Running tests…" : "Loading Python (first run ~10s)…") : "▶ Run hidden tests"}
         </button>
         {last && (
-          <span className={`text-sm font-semibold tabular-nums ${last.passed === last.total && !last.error ? "text-teal-700" : "text-slate-700"}`}>
+          <span className={`text-sm font-semibold tabular-nums ${last.passed === last.total && !last.error ? "text-brand-700" : "text-slate-700"}`}>
             {last.passed}/{last.total} passing
           </span>
         )}
@@ -108,7 +108,7 @@ export default function CodePanel({ session, update, onRun }: Props) {
           {last.results.map((r) => (
             <li key={r.name} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm">
               <div className="flex items-start gap-2">
-                <span className={`mt-px shrink-0 text-xs font-bold ${r.passed ? "text-teal-700" : "text-red-700"}`}>
+                <span className={`mt-px shrink-0 text-xs font-bold ${r.passed ? "text-brand-700" : "text-red-700"}`}>
                   {r.passed ? "✓ PASS" : "✗ FAIL"}
                 </span>
                 <span className="text-slate-800">{r.name}</span>
