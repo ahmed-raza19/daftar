@@ -546,7 +546,7 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
 
         {/* Side panel */}
         <aside
-          className={`${pane === "side" ? "flex" : "hidden"} w-full shrink-0 flex-col border-l border-slate-200 bg-slate-50 lg:flex ${tab === "code" ? "lg:w-[560px] xl:w-[620px]" : "lg:w-[380px]"}`}
+          className={`${pane === "side" ? "flex" : "hidden"} w-full shrink-0 flex-col border-l border-slate-200 bg-slate-50 lg:flex ${tab === "code" ? "lg:w-[440px] xl:w-[540px] 2xl:w-[620px]" : "lg:w-[380px]"}`}
         >
           <div className={`grid ${codeTask ? "grid-cols-5" : "grid-cols-4"} border-b border-slate-200 bg-white text-xs font-medium`}>
             {(
