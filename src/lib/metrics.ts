@@ -75,6 +75,7 @@ export function shiftSignals(session: Session): Signal[] {
   const consulted = new Set<string>();
   for (const m of mine) {
     if (m.channel.startsWith("dm:")) consulted.add(m.channel.slice(3));
+    if (m.channel === "client") s.personas.filter((p) => p.isExternal).forEach((p) => consulted.add(p.id));
     for (const p of s.personas) {
       const first = p.name.replace(/^(Mr|Ms|Mrs|Dr)\.?\s+/i, "").split(/\s+/)[0];
       if (new RegExp(`@${first}\\b`, "i").test(m.text)) consulted.add(p.id);
