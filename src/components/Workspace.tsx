@@ -25,6 +25,7 @@ import type { ChannelId, ChatMessage, CodeRun, Session } from "@/lib/types";
 import { YOU } from "@/lib/types";
 import AttachmentView from "./AttachmentView";
 import CodePanel, { testFlags } from "./CodePanel";
+import FileAttach from "./FileAttach";
 import Avatar from "./Avatar";
 import OrgChart from "./OrgChart";
 import { Logo } from "./Logo";
@@ -266,13 +267,14 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
 
   async function submit() {
     const words = countWords(sessionRef.current.deliverable);
-    if (words === 0) {
+    const attached = sessionRef.current.files?.length ?? 0;
+    if (words === 0 && attached === 0) {
       setTab("submit");
       setPane("side");
       return;
     }
     const min = codeTask ? 30 : 60;
-    if (words < min && !window.confirm(`Your note is only ${words} words. Submit anyway?`)) return;
+    if (attached === 0 && words < min && !window.confirm(`Your note is only ${words} words. Submit anyway?`)) return;
 
     if (!codeTask) return onSubmit(sessionRef.current);
     // Code Shift: always grade against a fresh test run of the final code.
@@ -653,11 +655,14 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
                     update((x) => ({ ...x, deliverable: v }));
                   }}
                   placeholder="Write your work here. It's saved automatically."
-                  className="mt-3 min-h-64 flex-1 resize-none rounded-xl border border-slate-300 bg-white p-3 text-[15px] leading-relaxed text-slate-900 outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20"
+                  className="mt-3 min-h-48 flex-1 resize-none rounded-xl border border-slate-300 bg-white p-3 text-[15px] leading-relaxed text-slate-900 outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20"
                 />
                 <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
                   <span>{countWords(session.deliverable)} words</span>
                   <span>{codeTask ? "Aim for 80–200 · your code is submitted too" : "Aim for 150–300"}</span>
+                </div>
+                <div className="mt-3">
+                  <FileAttach files={session.files ?? []} onChange={(files) => update((x) => ({ ...x, files }))} />
                 </div>
                 {submitError && (
                   <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-2.5 text-sm text-red-800">{submitError}</div>
