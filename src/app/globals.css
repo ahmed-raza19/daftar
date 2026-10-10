@@ -101,3 +101,12 @@ h2 {
     scroll-behavior: auto !important;
   }
 }
+
+/* "See a shift in action": progress bar for the auto-rotating tab */
+@keyframes showcase-progress {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+.showcase-progress {
+  animation: showcase-progress 6s linear both;
+}
