@@ -394,6 +394,26 @@ export function buildReportPdf(session: Session): jsPDF | null {
   doc.text(summary, M, y);
   y = Math.max(y + summary.length * 13, boxY + 104) + 6;
 
+  // ---- Conduct concern ----
+  if (r.conduct && !r.conduct.respectful) {
+    const lines = r.conduct.incidents.flatMap((i) => doc.splitTextToSize(`“${clean(i.quote)}” ${clean(i.why)}`, W - 2 * M - 24));
+    const boxH = 34 + lines.length * 11;
+    ensure(boxH + 10);
+    y += 8;
+    doc.setFillColor(254, 242, 242);
+    doc.setDrawColor(254, 202, 202);
+    doc.setLineWidth(0.8);
+    doc.roundedRect(M, y, W - 2 * M, boxH, 6, 6, "FD");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(...RED);
+    doc.text("Conduct concern: abusive or disrespectful messages. People skills capped at 2/10.", M + 12, y + 16);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.text(lines, M + 12, y + 30);
+    y += boxH;
+  }
+
   // ---- At a glance ----
   heading("At a glance", 120);
   const signals = shiftSignals(session);
@@ -473,6 +493,34 @@ export function buildReportPdf(session: Session): jsPDF | null {
     columnStyles: { 0: { cellWidth: 105, fontStyle: "bold" }, 1: { cellWidth: 170, fontStyle: "italic" } },
   });
   y = lastY();
+
+  // ---- Review conversation ----
+  if (r.review) {
+    heading(`Review conversation: explains own work ${r.review.score}/10`, 110);
+    if (r.review.summary) {
+      const sum = doc.splitTextToSize(clean(r.review.summary), W - 2 * M);
+      y += 14;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(...INK);
+      doc.text(sum, M, y);
+      y += (sum.length - 1) * 11;
+    }
+    autoTable(doc, {
+      startY: y + 8,
+      margin: { left: M, right: M },
+      head: [["Manager's question", "Your answer", "Verdict"]],
+      body: r.review.items.map((item, i) => [
+        clean(item.question),
+        session.reviewQA?.[i]?.answer ? `“${clean(session.reviewQA[i].answer)}”` : "Skipped",
+        `${item.verdict}\n${clean(item.comment)}`,
+      ]),
+      styles: { font: "helvetica", fontSize: 8.5, cellPadding: 5, textColor: INK, valign: "top" },
+      headStyles: { fillColor: [241, 245, 249], textColor: MUTED, fontStyle: "bold" },
+      columnStyles: { 0: { cellWidth: 170 }, 1: { cellWidth: 170, fontStyle: "italic" } },
+    });
+    y = lastY();
+  }
 
   // ---- Code Shift tests ----
   const lastRun = session.codeRuns?.at(-1);
