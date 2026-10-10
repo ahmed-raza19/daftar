@@ -195,6 +195,25 @@ const clamp = (n: number, lo: number, hi: number) =>
  * marked "not assessed" and left out of the average instead of being guessed.
  */
 export function finalizeReport(raw: AssessOutput, session: Session): Report {
+  // Evidence must be the candidate's own words: check each quote really appears in
+  // their messages, note or code (the model sometimes quotes a teammate instead).
+  const own = normalizeQuote(
+    [
+      ...session.messages.filter((m) => m.from === YOU).map((m) => m.text),
+      session.deliverable,
+      session.code ?? "",
+    ].join("\n"),
+  );
+  const saidByCandidate = (quote?: string) => {
+    // Allow quotes the model trimmed with "...": every fragment must appear.
+    const parts = (quote ?? "")
+      .split(/\.\.\.|…/)
+      .map(normalizeQuote)
+      .filter((p) => p.length > 0);
+    if (parts.join("").length < 6) return false;
+    return parts.every((p) => own.includes(p));
+  };
+
   const notAssessed = new Set<SkillId>();
   if (session.firedCurveballIds.length === 0) notAssessed.add("adaptability");
 
@@ -213,7 +232,7 @@ export function finalizeReport(raw: AssessOutput, session: Session): Report {
       id: id as SkillId,
       score: clamp(found?.score ?? 0, 0, 10),
       assessed: true,
-      evidence: found?.evidence ?? "No evidence in transcript",
+      evidence: saidByCandidate(found?.evidence) ? found!.evidence : "No evidence in transcript",
       feedback: found?.feedback ?? "",
     };
   });
@@ -224,12 +243,23 @@ export function finalizeReport(raw: AssessOutput, session: Session): Report {
   return {
     ...raw,
     skills,
+    // Key moments must quote the candidate; drop any the model attributed wrongly.
+    moments: raw.moments.filter((m) => saidByCandidate(m.quote)),
     overall,
     verdict: verdictFor(overall),
     deliverable: { ...raw.deliverable, score: clamp(raw.deliverable.score, 0, 10) },
     roleFit: raw.roleFit.slice(0, 3).map((r) => ({ ...r, fit: clamp(r.fit, 0, 100) })),
     plan: [...raw.plan].sort((a, b) => a.week - b.week).slice(0, 4),
   };
+}
+
+function normalizeQuote(s: string) {
+  return s
+    .toLowerCase()
+    .replace(/[“”"'‘’`]/g, "")
+    .replace(/[ \t]*\n[ \t]*/g, " ")
+    .replace(/[ \t]+/g, " ")
+    .trim();
 }
 
 export function verdictFor(overall: number): string {
