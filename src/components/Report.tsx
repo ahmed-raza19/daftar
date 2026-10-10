@@ -6,6 +6,7 @@ import { downloadFile, fileStem, sessionTranscript } from "@/lib/session";
 import type { Session } from "@/lib/types";
 import { SKILLS } from "@/lib/types";
 import Avatar from "./Avatar";
+import ReportDashboard from "./ReportDashboard";
 import { Logo } from "./Logo";
 
 interface Props {
@@ -106,6 +107,9 @@ export default function ReportView({ session, onRestart, onBack }: Props) {
             </div>
           </div>
         </section>
+
+        {/* Dashboard charts */}
+        <ReportDashboard session={session} />
 
         {/* At a glance */}
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
