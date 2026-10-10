@@ -35,7 +35,7 @@ Adaptability is "not assessed" because no curveball fired in such a short shift.
 - Every skill score quoted the graduate's own words verbatim.
 - **Fact tracking bug found and fixed:** in an early test the director model claimed a teammate had revealed a fact they never actually said. Now each claimed reveal must include the exact words from the reply, and code checks those words appear in the message before the fact counts.
 
-## Limitations and next step
+##Limitations and next step
 
 - The test transcripts were written by the team during testing, not by real graduates.
 - Next step: have 3–5 other participants play a shift, have a team member grade the same transcripts by hand, and compare with the AI grades.

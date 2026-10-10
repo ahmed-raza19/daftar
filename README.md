@@ -14,7 +14,7 @@ Built at **AICON'26 Build With AI** (EdTech & Workforce) by **team nexora**.
 
 ---
 
-## Problem → Input → AI → Solution → Impact
+## Problem → Input → AI → Solution→ Impact
 
 | | |
 |---|---|
