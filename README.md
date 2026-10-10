@@ -1,6 +1,6 @@
 # Daftar
 
-**Your first day at the office, before you're hired.** (*Daftar* is Urdu for "office". The repository keeps its original name, `firstshift`.)
+**Your first day at the office, before you're hired.** (*Daftar* is Urdu for "office".)
 
 Live: https://firstshift-nu.vercel.app
 
