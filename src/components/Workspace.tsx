@@ -8,6 +8,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ApiCallError, postJson } from "@/lib/api";
+import { runPythonTests } from "@/lib/pyrunner";
 import {
   availabilityLabel,
   channelInfo,
@@ -20,9 +21,10 @@ import {
 } from "@/lib/org";
 import { downloadFile, fileStem, firstName, newId, sessionTranscript } from "@/lib/session";
 import type { ChatTurnResult } from "@/lib/prompts/chat";
-import type { ChannelId, ChatMessage, Session } from "@/lib/types";
+import type { ChannelId, ChatMessage, CodeRun, Session } from "@/lib/types";
 import { YOU } from "@/lib/types";
 import AttachmentView from "./AttachmentView";
+import CodePanel, { testFlags } from "./CodePanel";
 import Avatar from "./Avatar";
 import OrgChart from "./OrgChart";
 import { Logo } from "./Setup";
@@ -35,7 +37,7 @@ interface Props {
   submitError: string | null;
 }
 
-type Tab = "task" | "org" | "intel" | "submit";
+type Tab = "code" | "task" | "org" | "intel" | "submit";
 type Pane = "channels" | "chat" | "side";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -59,7 +61,9 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
     for (const m of session.messages) if (m.from !== YOU) seen[m.channel] = (seen[m.channel] ?? 0) + 1;
     return seen;
   });
-  const [tab, setTab] = useState<Tab>("task");
+  const codeTask = s.codeTask;
+  const [tab, setTab] = useState<Tab>(codeTask ? "code" : "task");
+  const [submitting, setSubmitting] = useState(false);
   const [pane, setPane] = useState<Pane>("chat");
   const [toast, setToast] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
@@ -75,7 +79,9 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
   const liveRevealed = useRef(session.revealedFactIds);
   const liveFired = useRef(session.firedCurveballIds);
   const skipNoticed = useRef(session.orgEvents.some((e) => e.type === "skip_level"));
-  const queue = useRef<{ channel: ChannelId; skipLevel: boolean }[]>([]);
+  type Job = { channel: ChannelId; skipLevel: boolean; event?: { personaId: string; description: string } };
+  const queue = useRef<Job[]>([]);
+  const lastQaSignature = useRef<string | null>(null);
   const processing = useRef(false);
 
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -192,7 +198,8 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
       while (queue.current.length > 0) {
         const job = queue.current.shift()!;
         try {
-          await flow(job.channel, job.skipLevel);
+          if (job.event) await turn(job.channel, job.event);
+          else await flow(job.channel, job.skipLevel);
         } catch (e) {
           setTyping(null);
           setChatError(e instanceof ApiCallError ? e.message : "Something went wrong. Try again.");
@@ -226,15 +233,48 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
     void processQueue();
   }
 
-  function submit() {
+  // Code Shift: the QA teammate files a bug (or signs off) based on the real test results.
+  // Only when the set of failing tests changes, and at most 4 times per shift.
+  function onTestRun(run: CodeRun) {
+    if (!codeTask) return;
+    const failing = run.results.filter((r) => !r.passed);
+    const signature = run.error ? `error:${run.error.slice(0, 40)}` : failing.map((f) => f.name).join("|") || "all-green";
+    if (signature === lastQaSignature.current || (sessionRef.current.qaReports ?? 0) >= 4) return;
+    lastQaSignature.current = signature;
+    update((x) => ({ ...x, qaReports: (x.qaReports ?? 0) + 1 }));
+
+    const file = codeTask.fileName;
+    const description = run.error
+      ? `You (QA) just ran the hidden test suite on the new hire's ${file} and it failed to run: ${run.error}. Post a short message in #team pointing this out. Do not give the fix.`
+      : failing.length === 0
+        ? `You (QA) just ran the hidden test suite on the new hire's ${file}: all ${run.total} tests pass. Post a short sign-off in #team.`
+        : `You (QA) just ran the hidden test suite on the new hire's ${file}: ${run.passed}/${run.total} passing. Failing tests: ${failing
+            .map((f) => `"${f.name}" (${f.message})`)
+            .join("; ")}. File ONE short bug report in #team with an ID like BUG-2xx about the most important failing test and the observed behaviour. Do not give the fix.`;
+    queue.current.push({ channel: "team", skipLevel: false, event: { personaId: codeTask.qaId, description } });
+    void processQueue();
+  }
+
+  async function submit() {
     const words = countWords(sessionRef.current.deliverable);
     if (words === 0) {
       setTab("submit");
       setPane("side");
       return;
     }
-    if (words < 60 && !window.confirm(`Your deliverable is only ${words} words. Submit anyway?`)) return;
-    onSubmit(sessionRef.current);
+    const min = codeTask ? 30 : 60;
+    if (words < min && !window.confirm(`Your note is only ${words} words. Submit anyway?`)) return;
+
+    if (!codeTask) return onSubmit(sessionRef.current);
+    // Code Shift: always grade against a fresh test run of the final code.
+    setSubmitting(true);
+    try {
+      const current = sessionRef.current;
+      const run = await runPythonTests(current.code ?? "", codeTask.tests, testFlags(current));
+      onSubmit({ ...current, codeRuns: [...(current.codeRuns ?? []), run] });
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   // ---- Render -------------------------------------------------------------
@@ -497,11 +537,14 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
 
         {/* Side panel */}
         <aside
-          className={`${pane === "side" ? "flex" : "hidden"} w-full shrink-0 flex-col border-l border-slate-200 bg-slate-50 lg:flex lg:w-[380px]`}
+          className={`${pane === "side" ? "flex" : "hidden"} w-full shrink-0 flex-col border-l border-slate-200 bg-slate-50 lg:flex ${tab === "code" ? "lg:w-[560px] xl:w-[620px]" : "lg:w-[380px]"}`}
         >
-          <div className="grid grid-cols-4 border-b border-slate-200 bg-white text-xs font-medium">
+          <div className={`grid ${codeTask ? "grid-cols-5" : "grid-cols-4"} border-b border-slate-200 bg-white text-xs font-medium`}>
             {(
               [
+                ...(codeTask
+                  ? [["code", session.codeRuns?.length ? `Code ${session.codeRuns.at(-1)!.passed}/${session.codeRuns.at(-1)!.total}` : "Code"]]
+                  : []),
                 ["task", "Task"],
                 ["org", "Org chart"],
                 ["intel", `Intel ${found.length}/${totalFacts}`],
@@ -520,6 +563,8 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
           </div>
 
           <div className="scroll-thin flex-1 overflow-y-auto p-4">
+            {tab === "code" && codeTask && <CodePanel session={session} update={update} onRun={onTestRun} />}
+
             {tab === "task" && (
               <div className="space-y-4">
                 <div className="rounded-xl border border-slate-200 bg-white p-4">
@@ -588,7 +633,7 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
             {tab === "submit" && (
               <div className="flex h-full flex-col">
                 <label htmlFor="deliverable" className="text-sm font-semibold text-slate-900">
-                  Your deliverable
+                  {codeTask ? `Your note to ${personaById(s, s.managerId)?.name ?? "your manager"}` : "Your deliverable"}
                 </label>
                 <p className="mt-1 text-xs leading-relaxed text-slate-500">{s.task.deliverable}</p>
                 <textarea
@@ -603,7 +648,7 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
                 />
                 <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
                   <span>{countWords(session.deliverable)} words</span>
-                  <span>Aim for 150–300</span>
+                  <span>{codeTask ? "Aim for 80–200 · your code is submitted too" : "Aim for 150–300"}</span>
                 </div>
                 {submitError && (
                   <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-2.5 text-sm text-red-800">{submitError}</div>
@@ -611,10 +656,10 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
                 <button
                   type="button"
                   onClick={submit}
-                  disabled={sending}
+                  disabled={sending || submitting}
                   className="mt-3 rounded-lg bg-teal-700 px-4 py-2.5 font-semibold text-white transition hover:bg-teal-800 disabled:bg-slate-300"
                 >
-                  Submit and end my shift
+                  {submitting ? "Running final tests…" : "Submit and end my shift"}
                 </button>
                 <p className="mt-2 text-center text-[11px] text-slate-400">
                   An AI reviewer reads your whole shift and this deliverable.
