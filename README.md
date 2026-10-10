@@ -115,6 +115,7 @@ Open http://localhost:3000. Use **Code Shift** for the Python task with real tes
 - AI models via APIs: Google Gemini (`@google/genai`, primary), Anthropic Claude (`@anthropic-ai/sdk`, backup) and Groq (backup). No models were trained.
 - Python tests run with [Pyodide](https://pyodide.org) loaded from the jsDelivr CDN.
 - An AI coding assistant (Claude Code) helped write code; the team designed the product, reviewed the code and is responsible for it.
+- Claude Code skills in `.claude/skills/` (reviewed before adding, guidance only, no scripts): `frontend-design` from [anthropics/skills](https://github.com/anthropics/skills) and `react-best-practices` from [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills).
 - The sample scenario and all generated companies and people are fictional.
 
 ## Limitations
