@@ -6,7 +6,7 @@ import { downloadFile, fileStem, sessionTranscript } from "@/lib/session";
 import type { Session } from "@/lib/types";
 import { SKILLS } from "@/lib/types";
 import Avatar from "./Avatar";
-import { Logo } from "./Setup";
+import { Logo } from "./Logo";
 
 interface Props {
   session: Session;

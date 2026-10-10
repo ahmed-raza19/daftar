@@ -27,7 +27,7 @@ import AttachmentView from "./AttachmentView";
 import CodePanel, { testFlags } from "./CodePanel";
 import Avatar from "./Avatar";
 import OrgChart from "./OrgChart";
-import { Logo } from "./Setup";
+import { Logo } from "./Logo";
 
 interface Props {
   session: Session;
