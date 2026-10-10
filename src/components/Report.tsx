@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { channels } from "@/lib/org";
+import { overallStars, shiftSignals, tone } from "@/lib/metrics";
 import { downloadFile, fileStem, sessionTranscript } from "@/lib/session";
 import type { Session } from "@/lib/types";
-import { SKILLS, YOU } from "@/lib/types";
+import { SKILLS } from "@/lib/types";
 import Avatar from "./Avatar";
 import { Logo } from "./Setup";
 
@@ -14,18 +14,41 @@ interface Props {
   onBack: () => void;
 }
 
-const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
-
 const anchor = (score: number) =>
   score >= 9 ? "Exceptional" : score >= 7 ? "Solid, job-ready" : score >= 5 ? "Developing" : score >= 3 ? "Weak" : "Not shown";
+
+type Tab = "skills" | "intel" | "work" | "plan";
 
 export default function ReportView({ session, onRestart, onBack }: Props) {
   const r = session.report!;
   const s = session.scenario;
   const facts = s.personas.flatMap((p) => p.privateFacts.map((f) => ({ ...f, holder: p })));
   const foundCount = facts.filter((f) => session.revealedFactIds.includes(f.id)).length;
-  const yourMessages = session.messages.filter((m) => m.from === YOU);
-  const channelsUsed = new Set(yourMessages.map((m) => m.channel)).size;
+  const signals = shiftSignals(session);
+  const stars = overallStars(r.overall);
+  const assessed = r.skills.filter((k) => k.assessed !== false);
+  const best = [...assessed].sort((a, b) => b.score - a.score)[0];
+  const worst = [...assessed].sort((a, b) => a.score - b.score)[0];
+  const skillLabel = (id: string) => SKILLS.find((k) => k.id === id)?.label ?? id;
+  const [tab, setTab] = useState<Tab>("skills");
+  const [pdfBusy, setPdfBusy] = useState(false);
+
+  async function downloadPdf() {
+    setPdfBusy(true);
+    try {
+      const { downloadReportPdf } = await import("@/lib/pdf");
+      await downloadReportPdf(session);
+    } finally {
+      setPdfBusy(false);
+    }
+  }
+
+  const tabs: [Tab, string][] = [
+    ["skills", "Skills & evidence"],
+    ["intel", `Hidden information ${foundCount}/${facts.length}`],
+    ["work", s.codeTask ? "Your code & note" : "Your deliverable"],
+    ["plan", "30-day plan"],
+  ];
 
   return (
     <main className="flex-1 bg-slate-50">
@@ -34,7 +57,15 @@ export default function ReportView({ session, onRestart, onBack }: Props) {
           <Logo />
           <div className="ml-auto flex flex-wrap gap-2">
             <Btn onClick={onBack}>Back to shift</Btn>
-            <Btn onClick={() => downloadFile(`${fileStem(session)}.txt`, sessionTranscript(session))}>Transcript + report .txt</Btn>
+            <button
+              type="button"
+              onClick={downloadPdf}
+              disabled={pdfBusy}
+              className="rounded-lg border border-brand-700 bg-white px-3 py-1.5 text-sm font-semibold text-brand-800 hover:bg-brand-50 disabled:opacity-60"
+            >
+              {pdfBusy ? "Making PDF…" : "Download PDF"}
+            </button>
+            <Btn onClick={() => downloadFile(`${fileStem(session)}.txt`, sessionTranscript(session))}>.txt</Btn>
             <Btn onClick={() => downloadFile(`${fileStem(session)}.json`, JSON.stringify(session, null, 2), "application/json")}>
               Save .json
             </Btn>
@@ -49,162 +80,303 @@ export default function ReportView({ session, onRestart, onBack }: Props) {
         </div>
       </header>
 
-      <div className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6">
-        {/* Hero */}
-        <section className="grid gap-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 md:grid-cols-[1fr_auto]">
+      <div className="mx-auto max-w-5xl space-y-5 px-4 py-6 sm:px-6">
+        {/* Verdict */}
+        <section className="grid gap-6 rounded-2xl border border-slate-200 bg-white p-6 md:grid-cols-[1fr_auto] md:items-center">
           <div>
-            <h1 className="text-3xl font-bold text-ink sm:text-4xl">{session.profile.name}&apos;s first-shift review</h1>
-            <p className="mt-2 text-sm text-slate-500">
-              {s.graduateTitle} at {s.company.name} (a fictional company), {session.profile.degree}
+            <h1 className="text-2xl font-bold text-ink sm:text-3xl">{session.profile.name}&apos;s first-shift review</h1>
+            <p className="mt-1 text-sm text-slate-500">
+              {s.graduateTitle} at {s.company.name} (a fictional company)
             </p>
-            <p className="mt-5 max-w-2xl leading-relaxed text-slate-700">{r.summary}</p>
-            <p className="mt-4 text-xs text-slate-500">
-              Based on {plural(yourMessages.length, "message")} across {channelsUsed} of {channels(s).length} channels,{" "}
-              {foundCount} of {facts.length} hidden facts uncovered
-              {s.codeTask && session.codeRuns?.length
-                ? `, ${session.codeRuns.at(-1)!.passed}/${session.codeRuns.at(-1)!.total} hidden tests passing`
-                : ""}
-              , and your deliverable.
-            </p>
+            <p className="mt-4 max-w-2xl leading-relaxed text-slate-700">{r.summary}</p>
           </div>
-          <div className="flex flex-col items-start justify-center md:items-end">
-            <div className="text-sm font-medium text-slate-500">Overall</div>
+          <div className="flex items-center gap-5 md:flex-col md:items-end md:gap-2">
             <div className="flex items-baseline gap-1">
-              <span className="font-display text-7xl font-bold tabular-nums text-ink">{r.overall}</span>
+              <span className="font-display text-6xl font-bold tabular-nums text-ink">{r.overall}</span>
               <span className="text-lg text-slate-400">/100</span>
             </div>
-            {/* the verdict as a reviewer's stamp */}
-            <span className="mt-2 inline-block -rotate-3 rounded-md border-2 border-brand-700 px-3 py-1 font-display text-lg font-bold text-brand-700">
-              {r.verdict}
-            </span>
-            <p className="mt-3 max-w-[220px] text-[11px] leading-snug text-slate-400 md:text-right">
-              Average of the assessed skill scores. AI-generated practice feedback, not a hiring decision.
-            </p>
+            <div className="flex flex-col items-start gap-2 md:items-end">
+              <span className="flex items-center gap-2">
+                <Stars value={stars} size={20} />
+                <span className="text-sm font-semibold tabular-nums text-slate-700">{stars.toFixed(1)}</span>
+              </span>
+              <span className="inline-block -rotate-3 rounded-md border-2 border-brand-700 px-3 py-0.5 font-display text-base font-bold text-brand-700">
+                {r.verdict}
+              </span>
+            </div>
           </div>
         </section>
 
-        {/* Skills */}
-        <Card title="Six workplace skills" subtitle="Scored 0–10 against a fixed rubric. Every score quotes you.">
-          <SkillBars session={session} />
-        </Card>
+        {/* At a glance */}
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <div className="flex flex-wrap items-baseline justify-between gap-2 px-5 pb-3 pt-5">
+            <h2 className="text-lg font-bold text-ink">At a glance</h2>
+            <span className="flex items-center gap-2 text-xs text-slate-500">
+              <SourceTag source="measured" /> counted by the app <SourceTag source="ai" /> judged by the AI reviewer
+            </span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[560px] text-sm">
+              <thead>
+                <tr className="border-y border-slate-200 bg-slate-50 text-left text-xs text-slate-500">
+                  <th className="px-5 py-2 font-medium">Criteria</th>
+                  <th className="px-3 py-2 font-medium">Result</th>
+                  <th className="px-3 py-2 font-medium">Rating</th>
+                  <th className="px-5 py-2 text-right font-medium">Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                {signals.map((sig) => (
+                  <tr key={sig.id} className="border-b border-slate-100 last:border-0">
+                    <td className="px-5 py-2.5">
+                      <div className="font-medium text-ink">{sig.label}</div>
+                      <div className="text-xs text-slate-500">{sig.note}</div>
+                    </td>
+                    <td className={`px-3 py-2.5 font-medium tabular-nums ${toneText[tone(sig.stars)]}`}>{sig.value}</td>
+                    <td className="px-3 py-2.5">
+                      {sig.stars === null ? <span className="text-slate-400">n/a</span> : <Stars value={sig.stars} />}
+                    </td>
+                    <td className="px-5 py-2.5 text-right">
+                      <SourceTag source={sig.source} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
 
-        {s.codeTask && <CodeResults session={session} />}
+        {/* Highlights */}
+        {best && worst && (
+          <div className="grid gap-4 md:grid-cols-2">
+            <Highlight
+              title="Strongest skill"
+              skill={skillLabel(best.id)}
+              score={best.score}
+              text={best.feedback}
+              accent="brand"
+              onMore={() => setTab("skills")}
+            />
+            <Highlight
+              title="Work on this next"
+              skill={skillLabel(worst.id)}
+              score={worst.score}
+              text={worst.feedback}
+              accent="amber"
+              onMore={() => setTab("plan")}
+            />
+          </div>
+        )}
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* Hidden intel */}
-          <Card title="Hidden intel" subtitle={`You uncovered ${foundCount} of ${facts.length} things your teammates knew.`}>
-            <Meter value={foundCount} max={facts.length} label={`${foundCount}/${facts.length} found`} />
-            <ul className="mt-4 space-y-3">
-              {facts.map((f) => {
-                const found = session.revealedFactIds.includes(f.id);
-                const use = r.facts.find((x) => x.factId === f.id);
-                return (
-                  <li key={f.id} className="rounded-xl border border-slate-200 p-3">
-                    <div className="flex items-start gap-2 text-xs">
-                      <span
-                        className={`shrink-0 whitespace-nowrap rounded px-1.5 py-0.5 font-semibold ${found ? "bg-brand-50 text-brand-800" : "bg-slate-100 text-slate-600"}`}
-                      >
-                        {found ? "✓ Found" : "✗ Missed"}
-                      </span>
-                      <Avatar scenario={s} id={f.holder.id} size={18} />
-                      <span className="text-slate-500">
-                        {f.holder.name}, {f.holder.title}
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm text-slate-800">{f.fact}</p>
-                    <p className="mt-1 text-xs text-slate-500">Why it mattered: {f.whyItMatters}</p>
-                    {use && (
-                      <p className="mt-1 text-xs text-slate-600">
-                        <span className="font-medium">{use.usedInDeliverable ? "Used in your deliverable." : "Not used in your deliverable."}</span>{" "}
-                        {use.comment}
-                      </p>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </Card>
+        {/* Details, one tab at a time */}
+        <section className="rounded-2xl border border-slate-200 bg-white">
+          <div role="tablist" className="flex gap-1 overflow-x-auto border-b border-slate-200 px-3 pt-2">
+            {tabs.map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={tab === id}
+                onClick={() => setTab(id)}
+                className={`whitespace-nowrap px-3 py-2.5 text-sm font-medium ${
+                  tab === id ? "border-b-2 border-brand-700 text-brand-800" : "text-slate-500 hover:text-ink"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
 
-          <div className="space-y-6">
-            {/* Deliverable */}
-            <Card title="Your deliverable" subtitle={`${r.deliverable.score}/10 · ${anchor(r.deliverable.score)}`}>
-              <ListBlock title="What worked" items={r.deliverable.strengths} mark="+" />
-              <ListBlock title="What to fix" items={r.deliverable.issues} mark="–" />
-              <div className="mt-4 rounded-xl bg-slate-50 p-4">
-                <div className="text-xs font-semibold text-slate-500">What a senior would have submitted</div>
-                <p className="mt-1.5 text-sm leading-relaxed text-slate-700">{r.deliverable.seniorVersion}</p>
+          <div className="p-5 sm:p-6">
+            {tab === "skills" && (
+              <div className="space-y-8">
+                <SkillBars session={session} />
+                {r.moments.length > 0 && (
+                  <div>
+                    <h3 className="mb-3 font-semibold text-ink">Key moments</h3>
+                    <ul className="grid gap-3 md:grid-cols-2">
+                      {r.moments.map((m, i) => (
+                        <li key={i} className="rounded-xl border border-slate-200 p-4">
+                          <div
+                            className={`mb-2 inline-flex rounded px-1.5 py-0.5 text-xs font-semibold ${
+                              m.type === "strength" ? "bg-brand-50 text-brand-800" : "bg-amber-50 text-amber-800"
+                            }`}
+                          >
+                            {m.type === "strength" ? "▲ Strength" : "▼ Concern"}
+                          </div>
+                          <blockquote className="border-l-2 border-slate-300 pl-3 text-sm italic text-slate-700">“{m.quote}”</blockquote>
+                          <p className="mt-2 text-sm text-slate-600">{m.why}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
-              <Collapsible label="Show what you submitted">
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700">
-                  {session.deliverable.trim() || "(empty)"}
-                </p>
-              </Collapsible>
-            </Card>
+            )}
 
-            {/* Role fit */}
-            <Card title="Role fit" subtitle="Based only on how you worked in this shift.">
-              <ul className="space-y-4">
-                {r.roleFit.map((f) => (
-                  <li key={f.role}>
-                    <div className="flex items-baseline justify-between gap-3 text-sm">
-                      <span className="font-medium text-slate-900">{f.role}</span>
-                      <span className="tabular-nums text-slate-600">{f.fit}%</span>
+            {tab === "intel" && (
+              <ul className="grid gap-3 md:grid-cols-2">
+                {facts.map((f) => {
+                  const found = session.revealedFactIds.includes(f.id);
+                  const use = r.facts.find((x) => x.factId === f.id);
+                  return (
+                    <li key={f.id} className="rounded-xl border border-slate-200 p-3">
+                      <div className="flex items-start gap-2 text-xs">
+                        <span
+                          className={`shrink-0 whitespace-nowrap rounded px-1.5 py-0.5 font-semibold ${found ? "bg-brand-50 text-brand-800" : "bg-slate-100 text-slate-600"}`}
+                        >
+                          {found ? "✓ Found" : "✗ Missed"}
+                        </span>
+                        <Avatar scenario={s} id={f.holder.id} size={18} />
+                        <span className="text-slate-500">
+                          {f.holder.name}, {f.holder.title}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm text-slate-800">{f.fact}</p>
+                      <p className="mt-1 text-xs text-slate-500">Why it mattered: {f.whyItMatters}</p>
+                      {use && (
+                        <p className="mt-1 text-xs text-slate-600">
+                          <span className="font-medium">{use.usedInDeliverable ? "Used in your work." : "Not used in your work."}</span>{" "}
+                          {use.comment}
+                        </p>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+
+            {tab === "work" && (
+              <div className="space-y-6">
+                {s.codeTask && <CodeResults session={session} />}
+                <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
+                  <div>
+                    <h3 className="font-semibold text-ink">
+                      {s.codeTask ? "Your note" : "Your deliverable"}: {r.deliverable.score}/10, {anchor(r.deliverable.score).toLowerCase()}
+                    </h3>
+                    <ListBlock title="What worked" items={r.deliverable.strengths} mark="+" />
+                    <ListBlock title="What to fix" items={r.deliverable.issues} mark="–" />
+                    <div className="mt-4 rounded-xl bg-slate-50 p-4">
+                      <div className="text-xs font-semibold text-slate-500">What a senior would have submitted</div>
+                      <p className="mt-1.5 text-sm leading-relaxed text-slate-700">{r.deliverable.seniorVersion}</p>
                     </div>
-                    <Bar value={f.fit} max={100} />
-                    <p className="mt-1 text-xs leading-relaxed text-slate-500">{f.reason}</p>
+                    <Collapsible label="Show what you submitted">
+                      <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700">{session.deliverable.trim() || "(empty)"}</p>
+                    </Collapsible>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-ink">Role fit</h3>
+                    <p className="text-xs text-slate-500">Based only on how you worked in this shift.</p>
+                    <ul className="mt-3 space-y-4">
+                      {r.roleFit.map((f) => (
+                        <li key={f.role}>
+                          <div className="flex items-baseline justify-between gap-3 text-sm">
+                            <span className="font-medium text-slate-900">{f.role}</span>
+                            <span className="tabular-nums text-slate-600">{f.fit}%</span>
+                          </div>
+                          <Bar value={f.fit} max={100} />
+                          <p className="mt-1 text-xs leading-relaxed text-slate-500">{f.reason}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {tab === "plan" && (
+              <ol className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+                {r.plan.map((w) => (
+                  <li key={w.week} className="rounded-xl border border-slate-200 p-4">
+                    <div className="text-xs font-semibold text-brand-700">Week {w.week}</div>
+                    <div className="mt-1 font-medium text-slate-900">{w.focus}</div>
+                    <ul className="mt-2 space-y-1.5 text-sm text-slate-600">
+                      {w.actions.map((a, i) => (
+                        <li key={i} className="flex gap-2">
+                          <span className="text-slate-400">•</span>
+                          <span>{a}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </li>
                 ))}
-              </ul>
-            </Card>
+              </ol>
+            )}
           </div>
-        </div>
-
-        {/* Moments */}
-        <Card title="Key moments" subtitle="What you actually said, and why it mattered.">
-          <ul className="grid gap-3 md:grid-cols-2">
-            {r.moments.map((m, i) => (
-              <li key={i} className="rounded-xl border border-slate-200 p-4">
-                <div
-                  className={`mb-2 inline-flex rounded px-1.5 py-0.5 text-xs font-semibold ${
-                    m.type === "strength" ? "bg-brand-50 text-brand-800" : "bg-amber-50 text-amber-800"
-                  }`}
-                >
-                  {m.type === "strength" ? "▲ Strength" : "▼ Concern"}
-                </div>
-                <blockquote className="border-l-2 border-slate-300 pl-3 text-sm italic text-slate-700">“{m.quote}”</blockquote>
-                <p className="mt-2 text-sm text-slate-600">{m.why}</p>
-              </li>
-            ))}
-          </ul>
-        </Card>
-
-        {/* Plan */}
-        <Card title="Your 30-day plan" subtitle="Free or low-cost steps to close the gaps.">
-          <ol className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-            {r.plan.map((w) => (
-              <li key={w.week} className="rounded-xl border border-slate-200 p-4">
-                <div className="text-xs font-semibold text-brand-700">Week {w.week}</div>
-                <div className="mt-1 font-medium text-slate-900">{w.focus}</div>
-                <ul className="mt-2 space-y-1.5 text-sm text-slate-600">
-                  {w.actions.map((a, i) => (
-                    <li key={i} className="flex gap-2">
-                      <span className="text-slate-400">•</span>
-                      <span>{a}</span>
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            ))}
-          </ol>
-        </Card>
+        </section>
 
         <p className="pb-6 text-center text-xs leading-relaxed text-slate-500">
-          How this was scored: the app tracked which hidden facts you uncovered as you chatted. At the end, Gemini read your whole
-          transcript and deliverable, scored six skills on a fixed rubric, and had to quote you as evidence. The overall score
-          is computed by the app, not the AI. Non-native English and Roman Urdu are not penalised.
+          Measured rows are counted by the app. The AI reviewer read your whole shift, scored six skills on a fixed rubric and had to
+          quote you; the app checks those quotes and computes the overall score. Practice feedback, not a hiring decision.
         </p>
       </div>
     </main>
+  );
+}
+
+const toneText = { good: "text-brand-800", ok: "text-amber-700", bad: "text-red-700", neutral: "text-slate-700" } as const;
+
+function Stars({ value, size = 16 }: { value: number; size?: number }) {
+  return (
+    <span className="inline-flex gap-0.5" role="img" aria-label={`${value} out of 5 stars`}>
+      {[0, 1, 2, 3, 4].map((i) => {
+        const fill = Math.max(0, Math.min(1, value - i));
+        return (
+          <span key={i} className="relative inline-block" style={{ width: size, height: size }}>
+            <StarShape size={size} className="absolute inset-0 text-slate-200" />
+            <span className="absolute inset-y-0 left-0 overflow-hidden" style={{ width: `${fill * 100}%` }}>
+              <StarShape size={size} className="text-amber-500" />
+            </span>
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
+function StarShape({ size, className }: { size: number; className: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 20 20" className={className} aria-hidden fill="currentColor">
+      <path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L10 14.9l-5.2 2.7 1-5.8L1.5 7.7l5.9-.8z" />
+    </svg>
+  );
+}
+
+function SourceTag({ source }: { source: "measured" | "ai" }) {
+  return source === "measured" ? (
+    <span className="rounded bg-sky-50 px-1.5 py-0.5 text-[11px] font-medium text-sky-800 ring-1 ring-sky-200">Measured</span>
+  ) : (
+    <span className="rounded bg-violet-50 px-1.5 py-0.5 text-[11px] font-medium text-violet-800 ring-1 ring-violet-200">AI</span>
+  );
+}
+
+function Highlight({
+  title,
+  skill,
+  score,
+  text,
+  accent,
+  onMore,
+}: {
+  title: string;
+  skill: string;
+  score: number;
+  text: string;
+  accent: "brand" | "amber";
+  onMore: () => void;
+}) {
+  return (
+    <div className={`rounded-2xl border bg-white p-5 ${accent === "brand" ? "border-brand-200" : "border-amber-200"}`}>
+      <div className={`text-xs font-semibold ${accent === "brand" ? "text-brand-700" : "text-amber-700"}`}>{title}</div>
+      <div className="mt-1 flex items-baseline justify-between gap-3">
+        <span className="font-display text-lg font-bold text-ink">{skill}</span>
+        <span className="text-sm font-semibold tabular-nums text-slate-600">{score}/10</span>
+      </div>
+      <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-slate-600">{text}</p>
+      <button type="button" onClick={onMore} className="mt-2 text-sm font-medium text-brand-800 hover:underline">
+        {accent === "brand" ? "See the evidence" : "See your plan"}
+      </button>
+    </div>
   );
 }
 
