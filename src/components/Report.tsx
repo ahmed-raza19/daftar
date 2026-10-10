@@ -84,6 +84,8 @@ export default function ReportView({ session, onRestart, onBack }: Props) {
           <SkillBars session={session} />
         </Card>
 
+        {s.codeTask && <CodeResults session={session} />}
+
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Hidden intel */}
           <Card title="Hidden intel" subtitle={`You uncovered ${foundCount} of ${facts.length} things your teammates knew.`}>
@@ -244,6 +246,44 @@ function SkillBars({ session }: { session: Session }) {
         );
       })}
     </ul>
+  );
+}
+
+// Code Shift: hidden test results measured by the app (not the AI).
+function CodeResults({ session }: { session: Session }) {
+  const task = session.scenario.codeTask!;
+  const runs = session.codeRuns ?? [];
+  const last = runs.at(-1);
+  return (
+    <Card title="Code & hidden tests" subtitle={`${task.fileName}: tests run by the app in your browser, not judged by the AI.`}>
+      {last ? (
+        <>
+          <Meter value={last.passed} max={last.total} label={`${last.passed}/${last.total} tests passing on your final code`} />
+          {runs.length > 1 && (
+            <p className="mt-2 text-xs text-slate-500">
+              {runs.length} test runs during the shift: {runs.map((r) => `${r.passed}/${r.total}`).join(" → ")}
+            </p>
+          )}
+          <ul className="mt-4 grid gap-2 md:grid-cols-2">
+            {last.results.map((r) => (
+              <li key={r.name} className="rounded-lg border border-slate-200 px-3 py-2 text-sm">
+                <span className={`mr-2 text-xs font-bold ${r.passed ? "text-teal-700" : "text-red-700"}`}>
+                  {r.passed ? "✓ PASS" : "✗ FAIL"}
+                </span>
+                <span className="text-slate-800">{r.name}</span>
+                {r.message && <p className="mt-1 font-mono text-xs text-slate-500">{r.message}</p>}
+              </li>
+            ))}
+          </ul>
+          {last.error && <p className="mt-3 font-mono text-xs text-red-700">{last.error}</p>}
+        </>
+      ) : (
+        <p className="text-sm text-slate-600">The tests were never run.</p>
+      )}
+      <Collapsible label="Show your code">
+        <pre className="scroll-thin overflow-x-auto font-mono text-xs leading-relaxed text-slate-800">{session.code}</pre>
+      </Collapsible>
+    </Card>
   );
 }
 
