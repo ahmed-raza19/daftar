@@ -181,8 +181,9 @@ export default function Setup({ error, onStart, onSample, onLoad }: Props) {
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="mx-auto grid max-w-6xl items-start gap-10 px-4 pb-14 pt-6 sm:px-6 lg:grid-cols-[1fr_440px] lg:gap-14 lg:pt-8">
-          <div className="lg:pt-10">
+        {/* Phones: headline, then the chooser, then the example. Laptops: two columns. */}
+        <section className="mx-auto grid max-w-6xl items-start gap-x-14 gap-y-8 px-4 pb-14 pt-6 sm:px-6 lg:grid-cols-[1fr_440px] lg:grid-rows-[auto_1fr] lg:pt-8">
+          <div className="lg:col-start-1 lg:row-start-1 lg:pt-10">
             <h1 className="max-w-xl text-4xl font-bold leading-[1.05] text-ink sm:text-5xl">
               Your first week on the job, before your first job.
             </h1>
@@ -191,10 +192,9 @@ export default function Setup({ error, onStart, onSample, onLoad }: Props) {
               people, handle surprises, ship your work, and get a review built on what you
               actually did.
             </p>
-            <ShiftPeek />
           </div>
 
-          <div id="start" className="scroll-mt-24">
+          <div id="start" className="scroll-mt-24 lg:col-start-2 lg:row-span-2 lg:row-start-1">
             <IdBadge name={name} company={shift.company} role={choice === "custom" ? targetRole : shift.role} />
             <form
               className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
@@ -348,6 +348,10 @@ export default function Setup({ error, onStart, onSample, onLoad }: Props) {
               {loadError && <p className="mt-2 text-center text-xs text-red-700">{loadError}</p>}
             </form>
           </div>
+
+          <div className="lg:col-start-1 lg:row-start-2">
+            <ShiftPeek />
+          </div>
         </section>
 
         {/* How it works */}
@@ -439,7 +443,7 @@ function ShiftPeek() {
     { who: "You", tag: "", color: "#334155", text: "Asked Farah which words mean urgent. Fixed it: 9/9 tests passing." },
   ];
   return (
-    <figure className="mt-8 max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-label="Example of a shift">
+    <figure className="max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-label="Example of a shift">
       <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-4 py-2 text-xs text-slate-500">
         <span className="font-semibold text-slate-700"># team</span>
         <span>Rabta, Islamabad</span>
