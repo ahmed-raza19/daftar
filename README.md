@@ -2,7 +2,7 @@
 
 **Your first day at the office, before you're hired.** (*Daftar* is Urdu for "office".)
 
-Live: https://firstshift-nu.vercel.app
+Live: https://trydaftar.vercel.app
 
 Daftar is a multi-agent workplace simulation for fresh graduates. You join an AI-generated team at a fictional Pakistani company: a CEO, your manager, a senior colleague, a peer, someone from another department and an external client. Each of them has their own personality, authority and **private knowledge**. You only do the task well if you ask the right people the right questions, handle surprises, and respect the hierarchy. At the end, an AI reviewer grades six workplace skills, quoting your own messages as evidence.
 
