@@ -4,7 +4,7 @@
 // - Uses JSON mode and puts the schema in the system prompt.
 
 import "server-only";
-import { AiError, parseJson, type JsonRequest, type JsonResult } from "./shared";
+import { AiError, parseJson, unseenFilesNote, type JsonRequest, type JsonResult } from "./shared";
 
 const ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
 
@@ -33,7 +33,7 @@ ${JSON.stringify(req.schema)}`;
         model,
         messages: [
           { role: "system", content: system },
-          { role: "user", content: req.prompt },
+          { role: "user", content: req.prompt + unseenFilesNote(req) },
         ],
         response_format: { type: "json_object" },
         max_completion_tokens: 16000,

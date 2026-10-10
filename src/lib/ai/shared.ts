@@ -18,6 +18,16 @@ export interface JsonRequest {
   prompt: string;
   schema: object; // JSON Schema for the response
   effort?: Effort;
+  // Images / PDFs for models that can see them (base64, no data: prefix)
+  files?: { name: string; mimeType: string; data: string }[];
+}
+
+/** Note for models that cannot see attached files. */
+export function unseenFilesNote(req: JsonRequest): string {
+  if (!req.files?.length) return "";
+  return `
+
+NOTE: the new hire also attached ${req.files.map((f) => f.name).join(", ")}, which this reviewer cannot view. Do not guess their contents.`;
 }
 
 export interface JsonResult<T> {

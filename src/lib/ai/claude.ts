@@ -36,7 +36,26 @@ export async function claudeJson<T>(req: JsonRequest): Promise<JsonResult<T>> {
       betas: ["server-side-fallback-2026-07-01"],
       fallbacks: "default",
       system: req.system,
-      messages: [{ role: "user", content: req.prompt }],
+      messages: [
+        {
+          role: "user",
+          content: [
+            ...(req.files ?? []).map((f) =>
+              f.mimeType === "application/pdf"
+                ? ({ type: "document", source: { type: "base64", media_type: "application/pdf", data: f.data } } as const)
+                : ({
+                    type: "image",
+                    source: {
+                      type: "base64",
+                      media_type: f.mimeType as "image/png" | "image/jpeg" | "image/webp" | "image/gif",
+                      data: f.data,
+                    },
+                  } as const),
+            ),
+            { type: "text", text: req.prompt },
+          ],
+        },
+      ],
       output_config: {
         effort: req.effort ?? "high",
         format: { type: "json_schema", schema: strictSchema(req.schema) as Record<string, unknown> },

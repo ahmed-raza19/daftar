@@ -66,7 +66,17 @@ export async function geminiJson<T>(req: JsonRequest): Promise<JsonResult<T>> {
       try {
         const res = await ai.models.generateContent({
           model,
-          contents: req.prompt,
+          contents: req.files?.length
+            ? [
+                {
+                  role: "user",
+                  parts: [
+                    { text: req.prompt },
+                    ...req.files.map((f) => ({ inlineData: { mimeType: f.mimeType, data: f.data } })),
+                  ],
+                },
+              ]
+            : req.prompt,
           config: {
             systemInstruction: req.system,
             responseMimeType: "application/json",
