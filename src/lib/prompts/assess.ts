@@ -35,7 +35,7 @@ OTHER OUTPUTS
 - deliverable: score 0-10, 2-3 strengths, 2-4 issues (name any planted attachment flaw that was missed), and seniorVersion: 3-5 sentences describing what a strong senior colleague would have submitted.
 - moments: 2-4 key moments (strengths and concerns) with the quote and why it mattered.
 - roleFit: exactly 3 roles: the target role plus 2 adjacent roles that suit the degree, each with a 0-100 fit based only on behaviour shown in this shift.
-- plan: a 4-week plan (weeks 1-4), each with a focus and 2-3 concrete actions that are free or low-cost and accessible in Pakistan.
+- plan: a 4-week plan (weeks 1-4) for the graduate's REAL career after this simulation, each with a focus and 2-3 concrete actions that are free or low-cost and accessible in Pakistan (free online courses, practice datasets or exercises, mock tasks with friends, LinkedIn, university career office...). Never refer to the fictional company or its people in the plan.
 - summary: 2-3 sentences.`;
 
 export function assessPrompt(session: Session): string {

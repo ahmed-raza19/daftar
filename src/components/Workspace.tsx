@@ -52,7 +52,13 @@ export default function Workspace({ session, update, onSubmit, onRestart, submit
   const [sending, setSending] = useState(false);
   const [typing, setTyping] = useState<{ personaId: string; channel: ChannelId } | null>(null);
   const [chatError, setChatError] = useState<string | null>(null);
-  const [lastSeen, setLastSeen] = useState<Record<string, number>>({});
+  // A brand-new shift starts with unread kickoff messages; a resumed shift starts all read.
+  const [lastSeen, setLastSeen] = useState<Record<string, number>>(() => {
+    if (!session.messages.some((m) => m.from === YOU)) return {};
+    const seen: Record<string, number> = {};
+    for (const m of session.messages) if (m.from !== YOU) seen[m.channel] = (seen[m.channel] ?? 0) + 1;
+    return seen;
+  });
   const [tab, setTab] = useState<Tab>("task");
   const [pane, setPane] = useState<Pane>("chat");
   const [toast, setToast] = useState<string | null>(null);
