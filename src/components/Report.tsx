@@ -74,7 +74,7 @@ export default function ReportView({ session, onRestart, onBack }: Props) {
               {r.verdict}
             </span>
             <p className="mt-3 max-w-[220px] text-[11px] leading-snug text-slate-400 md:text-right">
-              Average of the six skill scores. AI-generated practice feedback, not a hiring decision.
+              Average of the assessed skill scores. AI-generated practice feedback, not a hiring decision.
             </p>
           </div>
         </section>
@@ -211,6 +211,7 @@ function SkillBars({ session }: { session: Session }) {
       {SKILLS.map(({ id, label }) => {
         const k = r.skills.find((x) => x.id === id);
         const score = k?.score ?? 0;
+        const assessed = k?.assessed !== false;
         return (
           <li key={id} className="grid gap-x-6 gap-y-2 md:grid-cols-[minmax(0,260px)_1fr]">
             <div
@@ -220,10 +221,10 @@ function SkillBars({ session }: { session: Session }) {
             >
               <div className="flex items-baseline justify-between text-sm">
                 <span className="font-medium text-slate-900">{label}</span>
-                <span className="tabular-nums text-slate-600">{score}/10</span>
+                <span className="tabular-nums text-slate-600">{assessed ? `${score}/10` : "Not assessed"}</span>
               </div>
-              <Bar value={score} max={10} />
-              {hover === id && (
+              {assessed ? <Bar value={score} max={10} /> : <div className="mt-1.5 h-2.5 w-full rounded-r-[4px] border border-dashed border-slate-300" />}
+              {hover === id && assessed && (
                 <div className="absolute left-0 top-full z-10 mt-1 rounded-md bg-slate-900 px-2 py-1 text-xs text-white shadow">
                   {label}: {score}/10 · {anchor(score)}
                 </div>
@@ -231,7 +232,11 @@ function SkillBars({ session }: { session: Session }) {
             </div>
             <div className="text-sm">
               <blockquote className="border-l-2 border-slate-300 pl-3 italic text-slate-700">
-                {k?.evidence && k.evidence !== "No evidence in transcript" ? `“${k.evidence}”` : "No evidence in transcript"}
+                {!assessed
+                  ? "Not assessed"
+                  : k?.evidence && k.evidence !== "No evidence in transcript"
+                    ? `“${k.evidence}”`
+                    : "No evidence in transcript"}
               </blockquote>
               <p className="mt-1.5 text-slate-600">{k?.feedback}</p>
             </div>

@@ -13,7 +13,7 @@ export async function POST(request: Request) {
       schema: ASSESS_SCHEMA,
       effort: "high",
     });
-    return Response.json({ report: finalizeReport(data), model });
+    return Response.json({ report: finalizeReport(data, session), model });
   } catch (err) {
     return errorResponse(err);
   }

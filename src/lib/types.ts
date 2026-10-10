@@ -100,6 +100,7 @@ export type SkillId = (typeof SKILLS)[number]["id"];
 export interface SkillScore {
   id: SkillId;
   score: number; // 0-10
+  assessed?: boolean; // false when the shift gave no chance to show this skill
   evidence: string; // verbatim quote from the graduate, or "No evidence in transcript"
   feedback: string;
 }

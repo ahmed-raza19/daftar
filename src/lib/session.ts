@@ -124,6 +124,7 @@ export function sessionTranscript(session: Session): string {
       "",
       ...SKILLS.map(({ id, label }) => {
         const k = r.skills.find((x) => x.id === id);
+        if (k?.assessed === false) return `- ${label}: not assessed. ${k.feedback}`;
         return `- ${label}: ${k?.score ?? 0}/10. ${k?.feedback ?? ""} Evidence: "${k?.evidence ?? ""}"`;
       }),
       "",

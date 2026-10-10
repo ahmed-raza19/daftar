@@ -165,19 +165,37 @@ export type AssessOutput = Omit<Report, "overall" | "verdict">;
 const clamp = (n: number, lo: number, hi: number) =>
   Math.max(lo, Math.min(hi, Math.round(Number(n) || 0)));
 
-/** Overall score and verdict are computed here, not by the AI, so they're consistent and explainable. */
-export function finalizeReport(raw: AssessOutput): Report {
+/**
+ * Overall score and verdict are computed here, not by the AI, so they're consistent and explainable.
+ * Skills the shift gave no chance to show (e.g. adaptability when no curveball fired) are
+ * marked "not assessed" and left out of the average instead of being guessed.
+ */
+export function finalizeReport(raw: AssessOutput, session: Session): Report {
+  const notAssessed = new Set<SkillId>();
+  if (session.firedCurveballIds.length === 0) notAssessed.add("adaptability");
+
   const skills = SKILLS.map(({ id }) => {
     const found = raw.skills.find((k) => k.id === id);
+    if (notAssessed.has(id)) {
+      return {
+        id: id as SkillId,
+        score: 0,
+        assessed: false,
+        evidence: "Not assessed",
+        feedback: "No curveball happened during this shift, so this skill wasn't tested. Keep going longer next time to see how you handle change.",
+      };
+    }
     return {
       id: id as SkillId,
       score: clamp(found?.score ?? 0, 0, 10),
+      assessed: true,
       evidence: found?.evidence ?? "No evidence in transcript",
       feedback: found?.feedback ?? "",
     };
   });
+  const counted = skills.filter((k) => k.assessed);
   const overall = Math.round(
-    (skills.reduce((sum, k) => sum + k.score, 0) / (skills.length * 10)) * 100,
+    (counted.reduce((sum, k) => sum + k.score, 0) / (counted.length * 10)) * 100,
   );
   return {
     ...raw,
