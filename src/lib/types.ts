@@ -49,6 +49,32 @@ export interface Curveball extends ScriptedMessage {
   afterMessages: number; // fires after the graduate has sent this many messages
 }
 
+// Code Shift: a coding task whose hidden tests really run (in the browser, via Pyodide).
+export interface CodeTask {
+  language: "python";
+  fileName: string; // e.g. "classifier.py"
+  functionName: string; // e.g. "classify_ticket"
+  starterCode: string;
+  tests: string; // hidden Python tests, written with check(name, fn)
+  qaId: string; // persona who files bugs from the test results
+  // Curveballs that switch on extra tests, e.g. { c4: "refund_rule" }
+  testFlags: Record<string, string>;
+}
+
+export interface TestResult {
+  name: string;
+  passed: boolean;
+  message: string;
+}
+
+export interface CodeRun {
+  at: number;
+  results: TestResult[];
+  passed: number;
+  total: number;
+  error?: string;
+}
+
 export interface Scenario {
   company: { name: string; industry: string; city: string; about: string };
   graduateTitle: string; // the job title the graduate holds in the simulation
@@ -64,6 +90,7 @@ export interface Scenario {
   attachmentIssues: string[]; // hidden flaws planted in the attachments
   kickoff: ScriptedMessage[];
   curveballs: Curveball[];
+  codeTask?: CodeTask;
 }
 
 export type ChannelId = string; // "general" | "team" | "client" | `dm:${personaId}`
@@ -134,6 +161,9 @@ export interface Session {
   firedCurveballIds: string[];
   orgEvents: OrgEvent[];
   deliverable: string;
+  code?: string; // Code Shift: the graduate's current code
+  codeRuns?: CodeRun[]; // every test run, newest last
+  qaReports?: number; // how many times QA has posted about test results
   startedAt: number;
   submittedAt?: number;
   report?: Report;
