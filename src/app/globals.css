@@ -1,21 +1,56 @@
 @import "tailwindcss";
 
+/*
+  FirstShift design tokens
+  - ink:    text on light surfaces
+  - paper:  page background (cool, not cream)
+  - brand:  deep "first day at the office" green, used for actions and progress
+  - clip:   the yellow of a badge clip; used sparingly (ID badge, new-intel toast)
+*/
 :root {
-  --background: #f6f7f9;
-  --foreground: #0f172a;
+  --background: #f4f6f8;
+  --foreground: #1e2433;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-plex-sans);
+  --font-display: var(--font-bricolage);
+  --font-mono: var(--font-plex-mono);
+}
+
+@theme {
+  --color-brand-50: #eef7f2;
+  --color-brand-100: #d6ede1;
+  --color-brand-200: #addac4;
+  --color-brand-300: #7cc2a2;
+  --color-brand-400: #48a47d;
+  --color-brand-500: #23875f;
+  --color-brand-600: #156f4e;
+  --color-brand-700: #0e5e46;
+  --color-brand-800: #0b4a38;
+  --color-brand-900: #08382b;
+  --color-clip: #f4c542;
+  --color-ink: #1e2433;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-plex-sans), system-ui, sans-serif;
+}
+
+h1,
+h2 {
+  font-family: var(--font-bricolage), var(--font-plex-sans), sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Visible keyboard focus everywhere */
+:focus-visible {
+  outline: 2px solid var(--color-brand-600);
+  outline-offset: 2px;
 }
 
 /* Thin scrollbars for the chat panes */
@@ -44,4 +79,25 @@ body {
 }
 .msg-in {
   animation: slide-in 0.25s ease-out;
+}
+
+/* The ID badge swings in once on load: the page's single orchestrated moment */
+@keyframes badge-in {
+  from { opacity: 0; transform: translateY(-14px) rotate(-3deg); }
+  to { opacity: 1; transform: translateY(0) rotate(0); }
+}
+.badge-in {
+  animation: badge-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transform-origin: top center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
