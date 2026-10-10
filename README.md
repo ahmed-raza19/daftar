@@ -1,8 +1,10 @@
-# FirstShift
+# Daftar
 
-**Your first week on the job, before your first job.**
+**Your first day at the office, before you're hired.** (*Daftar* is Urdu for "office". The repository keeps its original name, `firstshift`.)
 
-FirstShift is a multi-agent workplace simulation for fresh graduates. You join an AI-generated team at a fictional Pakistani company: a CEO, your manager, a senior colleague, a peer, someone from another department and an external client. Each of them has their own personality, authority and **private knowledge**. You only do the task well if you ask the right people the right questions, handle surprises, and respect the hierarchy. At the end, an AI reviewer grades six workplace skills, quoting your own messages as evidence.
+Live: https://firstshift-nu.vercel.app
+
+Daftar is a multi-agent workplace simulation for fresh graduates. You join an AI-generated team at a fictional Pakistani company: a CEO, your manager, a senior colleague, a peer, someone from another department and an external client. Each of them has their own personality, authority and **private knowledge**. You only do the task well if you ask the right people the right questions, handle surprises, and respect the hierarchy. At the end, an AI reviewer grades six workplace skills, quoting your own messages as evidence.
 
 Two ways to play:
 - **Code Shift (AI/ML Engineer):** implement `classify_ticket()` in Python for a fictional Islamabad helpdesk startup, with an 8-person AI team. **Hidden tests really run in your browser**, and the QA bot files bugs from the real results. Each teammate's private fact maps to a hidden test, so asking the right people is how you get the tests green.
